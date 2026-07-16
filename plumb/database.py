@@ -112,4 +112,143 @@ class Database:
             conn.execute("DELETE FROM blocked_websites WHERE id = ?", (website_id,))
 
 
+
+    
+    def get_total_stats(self, time_range="all", project_id=None, ref_date=None):
+        if ref_date is None: ref_date = datetime.now()
+        date_str = ref_date.strftime("%Y-%m-%d")
+        
+        with sqlite3.connect(self.db_path) as conn:
+            query = """
+                SELECT type, SUM(duration_seconds), COUNT(id)
+                FROM sessions
+            """
+            conditions = []
+            params = []
+            
+            if project_id is not None:
+                conditions.append("project_id = ?")
+                params.append(project_id)
+                
+            if time_range == "day":
+                conditions.append("date(timestamp, 'localtime') = ?")
+                params.append(date_str)
+            elif time_range == "week":
+                start_of_week = ref_date - timedelta(days=ref_date.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+                conditions.append("date(timestamp, 'localtime') >= ? AND date(timestamp, 'localtime') <= ?")
+                params.extend([start_of_week.strftime("%Y-%m-%d"), end_of_week.strftime("%Y-%m-%d")])
+            elif time_range == "month":
+                start_of_month = ref_date.replace(day=1)
+                # Next month - 1 day
+                next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+                end_of_month = next_month - timedelta(days=1)
+                conditions.append("date(timestamp, 'localtime') >= ? AND date(timestamp, 'localtime') <= ?")
+                params.extend([start_of_month.strftime("%Y-%m-%d"), end_of_month.strftime("%Y-%m-%d")])
+                
+            if conditions:
+                query += " WHERE " + " AND ".join(conditions)
+                
+            query += " GROUP BY type"
+            
+            cursor = conn.execute(query, params)
+            rows = cursor.fetchall()
+            
+            stats = {
+                "total_focus_seconds": 0,
+                "total_break_seconds": 0,
+                "completed_pomodoros": 0
+            }
+            
+            for row in rows:
+                session_type = row[0]
+                total_duration = row[1]
+                count = row[2]
+                
+                if session_type == "Focus":
+                    stats["total_focus_seconds"] += total_duration
+                    stats["completed_pomodoros"] += count
+                elif session_type in ["Short Break", "Long Break"]:
+                    stats["total_break_seconds"] += total_duration
+                    
+            return stats
+
+    def get_heatmap_data(self, project_id=None, days=365):
+        # We don't use this in the new layout anymore, but keep it around just in case
+        with sqlite3.connect(self.db_path) as conn:
+            query = """
+                SELECT date(timestamp, 'localtime') as day, SUM(duration_seconds)
+                FROM sessions
+                WHERE type = 'Focus' AND date(timestamp, 'localtime') >= date('now', 'localtime', ?)
+            """
+            params = [f"-{days} days"]
+            
+            if project_id is not None:
+                query += " AND project_id = ?"
+                params.append(project_id)
+                
+            query += " GROUP BY day ORDER BY day ASC"
+            
+            cursor = conn.execute(query, params)
+            rows = cursor.fetchall()
+            
+            heatmap_data = {}
+            for row in rows:
+                heatmap_data[row[0]] = row[1]
+                
+            return heatmap_data
+
+    def get_graph_data(self, time_range="day", project_id=None, ref_date=None):
+        if ref_date is None: ref_date = datetime.now()
+        date_str = ref_date.strftime("%Y-%m-%d")
+        
+        with sqlite3.connect(self.db_path) as conn:
+            query = ""
+            params = []
+            
+            conditions = ["type = 'Focus'"]
+            if project_id is not None:
+                conditions.append("project_id = ?")
+                params.append(project_id)
+                
+            if time_range == "day":
+                conditions.append("date(timestamp, 'localtime') = ?")
+                params.append(date_str)
+                query = "SELECT strftime('%H', timestamp, 'localtime') as hour, SUM(duration_seconds) FROM sessions WHERE " + " AND ".join(conditions) + " GROUP BY hour ORDER BY hour ASC"
+            elif time_range == "week":
+                start_of_week = ref_date - timedelta(days=ref_date.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+                conditions.append("date(timestamp, 'localtime') >= ? AND date(timestamp, 'localtime') <= ?")
+                params.extend([start_of_week.strftime("%Y-%m-%d"), end_of_week.strftime("%Y-%m-%d")])
+                query = "SELECT strftime('%w', timestamp, 'localtime') as dow, SUM(duration_seconds) FROM sessions WHERE " + " AND ".join(conditions) + " GROUP BY dow ORDER BY dow ASC"
+                
+                # sqlite strftime('%w') returns 0-6 where 0 is Sunday.
+                # Adjust to 0-6 where 0 is Monday so it matches our UI.
+                
+            elif time_range == "month":
+                start_of_month = ref_date.replace(day=1)
+                next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+                end_of_month = next_month - timedelta(days=1)
+                conditions.append("date(timestamp, 'localtime') >= ? AND date(timestamp, 'localtime') <= ?")
+                params.extend([start_of_month.strftime("%Y-%m-%d"), end_of_month.strftime("%Y-%m-%d")])
+                query = "SELECT strftime('%d', timestamp, 'localtime') as dom, SUM(duration_seconds) FROM sessions WHERE " + " AND ".join(conditions) + " GROUP BY dom ORDER BY dom ASC"
+            else:
+                query = "SELECT strftime('%Y-%m', timestamp, 'localtime') as month, SUM(duration_seconds) FROM sessions WHERE " + " AND ".join(conditions) + " GROUP BY month ORDER BY month ASC"
+                
+            cursor = conn.execute(query, params)
+            rows = cursor.fetchall()
+            
+            graph_data = {}
+            for row in rows:
+                if time_range == "week":
+                    # Convert Sunday=0 to Monday=0
+                    dow = int(row[0])
+                    dow = (dow - 1) % 7
+                    graph_data[str(dow)] = row[1]
+                else:
+                    graph_data[row[0]] = row[1]
+                
+            return graph_data
+
+
 db = Database()

@@ -1,109 +1,435 @@
 import gi
+import math
+from datetime import datetime, timedelta
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
-from gi.repository import Gtk, Adw, GLib
+gi.require_version("PangoCairo", "1.0")
+from gi.repository import Gtk, Adw, GLib, Gdk, Pango, PangoCairo
 from plumb.database import db
+
+class HeatmapWidget(Gtk.DrawingArea):
+    def __init__(self):
+        super().__init__()
+        self.set_size_request(-1, 140)
+        self.set_draw_func(self.on_draw)
+        self.heatmap_data = {}
+        self.accent_color = (0, 0, 0, 1)
+        
+    def set_data(self, data):
+        self.heatmap_data = data
+        self.queue_draw()
+        
+    def get_accent_rgba(self):
+        context = self.get_style_context()
+        success, rgba = context.lookup_color("accent_bg_color")
+        if success:
+            return (rgba.red, rgba.green, rgba.blue, rgba.alpha)
+        return (0.2, 0.5, 0.9, 1.0)
+        
+    def on_draw(self, drawing_area, cr, width, height):
+        self.accent_color = self.get_accent_rgba()
+        r, g, b, a = self.accent_color
+        
+        cell_size = 12
+        spacing = 4
+        
+        total_cols = 52
+        total_rows = 7
+        
+        grid_width = total_cols * (cell_size + spacing) - spacing
+        grid_height = total_rows * (cell_size + spacing) - spacing
+        
+        start_x = (width - grid_width) / 2
+        start_y = (height - grid_height) / 2
+        
+        if start_x < 0: start_x = 0
+        if start_y < 0: start_y = 0
+        
+        today = datetime.now()
+        start_date = today - timedelta(days=364)
+        
+        for col in range(total_cols):
+            for row in range(total_rows):
+                date_offset = col * 7 + row
+                current_date = start_date + timedelta(days=date_offset)
+                date_str = current_date.strftime("%Y-%m-%d")
+                
+                seconds = self.heatmap_data.get(date_str, 0)
+                
+                x = start_x + col * (cell_size + spacing)
+                y = start_y + row * (cell_size + spacing)
+                
+                cr.set_source_rgba(r, g, b, 0.1)
+                
+                if seconds > 0:
+                    intensity = min(1.0, 0.2 + (seconds / 14400.0) * 0.8) # max intensity at ~4 hours
+                    cr.set_source_rgba(r, g, b, intensity)
+                
+                radius = 2.5
+                cr.arc(x + radius, y + radius, radius, math.pi, 3 * math.pi / 2)
+                cr.arc(x + cell_size - radius, y + radius, radius, 3 * math.pi / 2, 2 * math.pi)
+                cr.arc(x + cell_size - radius, y + cell_size - radius, radius, 0, math.pi / 2)
+                cr.arc(x + radius, y + cell_size - radius, radius, math.pi / 2, math.pi)
+                cr.close_path()
+                cr.fill()
+
+class GraphWidget(Gtk.DrawingArea):
+    def __init__(self):
+        super().__init__()
+        self.set_size_request(-1, 240)
+        self.set_draw_func(self.on_draw)
+        self.graph_data = {}
+        self.time_range = "day"
+        self.accent_color = (0, 0, 0, 1)
+        
+    def set_data(self, data, time_range):
+        self.graph_data = data
+        self.time_range = time_range
+        self.queue_draw()
+
+    def get_accent_rgba(self):
+        context = self.get_style_context()
+        success, rgba = context.lookup_color("accent_bg_color")
+        if success:
+            return (rgba.red, rgba.green, rgba.blue, rgba.alpha)
+        return (0.2, 0.5, 0.9, 1.0)
+        
+    def on_draw(self, drawing_area, cr, width, height):
+        self.accent_color = self.get_accent_rgba()
+        r, g, b, a = self.accent_color
+        
+        margin_left = 50
+        margin_right = 10
+        margin_top = 20
+        margin_bottom = 30
+        
+        graph_width = width - margin_left - margin_right
+        graph_height = height - margin_top - margin_bottom
+        
+        if graph_width <= 0 or graph_height <= 0: return
+        
+        max_minutes = 60
+        if self.graph_data:
+            max_val_seconds = max(self.graph_data.values()) if self.graph_data.values() else 0
+            max_val_minutes = max_val_seconds / 60
+            if max_val_minutes > 60: max_minutes = 120
+            if max_val_minutes > 120: max_minutes = int(max_val_minutes * 1.2)
+            
+        y_labels = [f"{int(max_minutes)}m", f"{int(max_minutes*2/3)}m", f"{int(max_minutes/3)}m", "0m"]
+        
+        for i, label_text in enumerate(y_labels):
+            y = margin_top + i * (graph_height / 3)
+            cr.set_source_rgba(0.5, 0.5, 0.5, 0.1)
+            cr.set_line_width(1)
+            cr.move_to(margin_left, y)
+            cr.line_to(width - margin_right, y)
+            cr.stroke()
+            
+            cr.set_source_rgba(0.5, 0.5, 0.5, 0.6)
+            layout = self.create_pango_layout(label_text)
+            layout.set_font_description(Pango.FontDescription.from_string("Sans 10"))
+            _, extents = layout.get_pixel_extents()
+            cr.move_to(margin_left - extents.width - 8, y - extents.height / 2)
+            PangoCairo.show_layout(cr, layout)
+            
+        keys = []
+        x_labels = []
+        if self.time_range == "day":
+            keys = [f"{i:02d}" for i in range(24)]
+            x_labels = ["0:00", "6:00", "12:00", "18:00"]
+        elif self.time_range == "week":
+            keys = [str(i) for i in range(7)]
+            x_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        elif self.time_range == "month":
+            keys = [f"{i:02d}" for i in range(1, 32)]
+            x_labels = ["1", "8", "15", "22", "29"]
+        else:
+            keys = sorted(list(self.graph_data.keys())) if self.graph_data else []
+            x_labels = keys
+            
+        if not keys: return
+        
+        bar_width = min(40, (graph_width / len(keys)) * 0.8)
+        bar_spacing = (graph_width - (bar_width * len(keys))) / max(1, (len(keys) - 1))
+        
+        cr.set_source_rgba(r, g, b, 0.8)
+        for i, key in enumerate(keys):
+            val_seconds = self.graph_data.get(key, 0)
+            val_minutes = val_seconds / 60
+            
+            bar_h = (val_minutes / max_minutes) * graph_height if max_minutes > 0 else 0
+            if bar_h > graph_height: bar_h = graph_height
+            
+            if bar_h > 0:
+                x = margin_left + i * (bar_width + bar_spacing)
+                y = height - margin_bottom - bar_h
+                
+                radius = min(4, bar_width / 2)
+                cr.arc(x + radius, y + radius, radius, math.pi, 3 * math.pi / 2)
+                cr.arc(x + bar_width - radius, y + radius, radius, 3 * math.pi / 2, 2 * math.pi)
+                cr.line_to(x + bar_width, height - margin_bottom)
+                cr.line_to(x, height - margin_bottom)
+                cr.close_path()
+                cr.fill()
+                
+        cr.set_source_rgba(0.5, 0.5, 0.5, 0.6)
+        
+        if self.time_range == "day":
+            for i, label_text in enumerate(x_labels):
+                x = margin_left + i * (graph_width / 3)
+                layout = self.create_pango_layout(label_text)
+                layout.set_font_description(Pango.FontDescription.from_string("Sans 10"))
+                _, extents = layout.get_pixel_extents()
+                cr.move_to(x - extents.width / 2, height - margin_bottom + 8)
+                PangoCairo.show_layout(cr, layout)
+        elif self.time_range == "week":
+            for i, label_text in enumerate(x_labels):
+                x = margin_left + i * (bar_width + bar_spacing) + bar_width / 2
+                layout = self.create_pango_layout(label_text)
+                layout.set_font_description(Pango.FontDescription.from_string("Sans 10"))
+                _, extents = layout.get_pixel_extents()
+                cr.move_to(x - extents.width / 2, height - margin_bottom + 8)
+                PangoCairo.show_layout(cr, layout)
 
 class StatsPage(Gtk.Box):
     def __init__(self, main_window):
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
         self.main_window = main_window
+        self.current_project_id = None
+        self.current_time_range = "day"
+        self.current_date = datetime.now()
 
-        # Add a scrollable window so stats can grow
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_hexpand(True)
         scrolled.set_vexpand(True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.append(scrolled)
 
-        # Adw.Clamp keeps the content centered and readable
         clamp = Adw.Clamp()
-        clamp.set_maximum_size(500)
+        clamp.set_maximum_size(650)
         clamp.set_margin_top(32)
         clamp.set_margin_bottom(32)
         clamp.set_margin_start(16)
         clamp.set_margin_end(16)
         scrolled.set_child(clamp)
 
-        # Main container inside clamp
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=32)
         clamp.set_child(self.main_box)
 
-        # Header Stack Switcher (Today / Week / Month / All Time)
-        self.time_switcher = Gtk.StackSwitcher()
-        self.time_switcher.set_halign(Gtk.Align.CENTER)
-        self.time_switcher.set_margin_bottom(12)
-        self.main_box.append(self.time_switcher)
-
-        self.stack = Gtk.Stack()
-        self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
-        self.main_box.append(self.stack)
+        # 1. Top Toggle (Today | Week | Month | Year)
+        self.mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.mode_box.add_css_class("linked")
+        self.mode_box.set_halign(Gtk.Align.CENTER)
         
-        self.time_switcher.set_stack(self.stack)
-
-        # Build individual pages
-        self.stack.add_titled(self._build_stats_view("today"), "today", "Today")
-        self.stack.add_titled(self._build_stats_view("week"), "week", "This Week")
-        self.stack.add_titled(self._build_stats_view("month"), "month", "This Month")
-        self.stack.add_titled(self._build_stats_view("all"), "all", "All Time")
-
-    def _build_stats_view(self, time_range):
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-
-        # Filters Row
-        filters_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.btn_day = Gtk.ToggleButton(label="Today")
+        self.btn_day.set_active(True)
+        self.btn_week = Gtk.ToggleButton(label="Week")
+        self.btn_week.set_group(self.btn_day)
+        self.btn_month = Gtk.ToggleButton(label="Month")
+        self.btn_month.set_group(self.btn_day)
+        self.btn_year = Gtk.ToggleButton(label="Year")
+        self.btn_year.set_group(self.btn_day)
         
-        # Date selector mock
-        date_btn = Gtk.Button()
-        date_btn.add_css_class("flat")
-        date_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        date_box.append(Gtk.Label(label="Select Date"))
-        date_box.append(Gtk.Image.new_from_icon_name("pan-up-symbolic"))
-        date_btn.set_child(date_box)
+        self.btn_day.connect("toggled", self._on_mode_toggled, "day")
+        self.btn_week.connect("toggled", self._on_mode_toggled, "week")
+        self.btn_month.connect("toggled", self._on_mode_toggled, "month")
+        self.btn_year.connect("toggled", self._on_mode_toggled, "all")
         
-        spacer = Gtk.Box()
-        spacer.set_hexpand(True)
+        self.mode_box.append(self.btn_day)
+        self.mode_box.append(self.btn_week)
+        self.mode_box.append(self.btn_month)
+        self.mode_box.append(self.btn_year)
+        self.main_box.append(self.mode_box)
         
-        # Project Dropdown
-        model = Gtk.StringList.new(["All Projects", "Default Project"])
-        project_dropdown = Gtk.DropDown(model=model)
+        # 2. Summary Metrics (Total Hours / Total Breaks)
+        summary_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         
-        filters_box.append(date_btn)
-        filters_box.append(spacer)
-        filters_box.append(project_dropdown)
+        def create_stat(val, desc):
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            box.set_halign(Gtk.Align.CENTER)
+            val_lbl = Gtk.Label(label=val)
+            val_lbl.add_css_class("title-1")
+            val_lbl.add_css_class("numeric")
+            desc_lbl = Gtk.Label(label=desc)
+            desc_lbl.add_css_class("dim-label")
+            box.append(val_lbl)
+            box.append(desc_lbl)
+            return box, val_lbl
+            
+        focus_box, self.focus_lbl = create_stat("0h 0m", "Total focus time")
+        break_box, self.breaks_lbl = create_stat("0h 0m", "Total break time")
         
-        box.append(filters_box)
-
-        # Graph Placeholder
-        graph_frame = Gtk.Frame()
-        graph_frame.set_vexpand(True)
-        graph_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        graph_box.set_margin_top(24)
-        graph_box.set_margin_bottom(24)
-        graph_box.set_halign(Gtk.Align.CENTER)
-        graph_box.set_valign(Gtk.Align.CENTER)
-        graph_box.append(Gtk.Image.new_from_icon_name("utilities-system-monitor-symbolic"))
-        graph_box.append(Gtk.Label(label="Graph Widget", margin_top=12))
-        graph_frame.set_child(graph_box)
-        box.append(graph_frame)
-
-        # Heatmap Placeholder
+        summary_box.append(focus_box)
+        spacer1 = Gtk.Box()
+        spacer1.set_hexpand(True)
+        summary_box.append(spacer1)
+        summary_box.append(break_box)
+        self.main_box.append(summary_box)
+        
+        # 3. Controls Row (Date Picker + Nav + Project)
+        controls_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        controls_box.set_valign(Gtk.Align.CENTER)
+        
+        date_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        
+        self.cal_btn = Gtk.MenuButton()
+        self.cal_btn.add_css_class("flat")
+        date_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.date_lbl = Gtk.Label(label="26/07/2026")
+        self.date_lbl.add_css_class("heading")
+        date_btn_box.append(self.date_lbl)
+        date_btn_box.append(Gtk.Image.new_from_icon_name("pan-down-symbolic"))
+        self.cal_btn.set_child(date_btn_box)
+        
+        cal_popover = Gtk.Popover()
+        self.calendar = Gtk.Calendar()
+        self.calendar.connect("day-selected", self._on_calendar_date_selected)
+        cal_popover.set_child(self.calendar)
+        self.cal_btn.set_popover(cal_popover)
+        
+        date_box.append(self.cal_btn)
+        
+        nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        nav_box.add_css_class("linked")
+        btn_prev = Gtk.Button(icon_name="go-previous-symbolic")
+        btn_prev.connect("clicked", self._on_prev_clicked)
+        btn_next = Gtk.Button(icon_name="go-next-symbolic")
+        btn_next.connect("clicked", self._on_next_clicked)
+        nav_box.append(btn_prev)
+        nav_box.append(btn_next)
+        
+        date_box.append(nav_box)
+        controls_box.append(date_box)
+        
+        spacer2 = Gtk.Box()
+        spacer2.set_hexpand(True)
+        controls_box.append(spacer2)
+        
+        self.project_model = Gtk.StringList.new(["All Projects"])
+        self.project_dropdown = Gtk.DropDown(model=self.project_model)
+        self.project_dropdown.connect("notify::selected", self._on_project_changed)
+        controls_box.append(self.project_dropdown)
+        
+        self.main_box.append(controls_box)
+        
+        # 4. Graph Widget
+        self.graph = GraphWidget()
+        self.main_box.append(self.graph)
+        
+        # 5. Heatmap Widget
         heatmap_frame = Gtk.Frame()
-        heatmap_frame.set_vexpand(True)
-        heatmap_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        heatmap_box.set_margin_top(24)
-        heatmap_box.set_margin_bottom(24)
-        heatmap_box.set_halign(Gtk.Align.CENTER)
-        heatmap_box.set_valign(Gtk.Align.CENTER)
-        heatmap_box.append(Gtk.Image.new_from_icon_name("view-grid-symbolic"))
-        heatmap_box.append(Gtk.Label(label="Heatmap Widget", margin_top=12))
-        heatmap_frame.set_child(heatmap_box)
-        box.append(heatmap_frame)
+        heatmap_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        heatmap_vbox.set_margin_top(16)
+        heatmap_vbox.set_margin_bottom(16)
+        heatmap_vbox.set_margin_start(16)
+        heatmap_vbox.set_margin_end(16)
+        
+        hm_title = Gtk.Label(label="Contribution Graph")
+        hm_title.add_css_class("heading")
+        hm_title.set_halign(Gtk.Align.START)
+        hm_title.set_margin_bottom(16)
+        heatmap_vbox.append(hm_title)
+        
+        self.heatmap = HeatmapWidget()
+        heatmap_vbox.append(self.heatmap)
+        
+        heatmap_frame.set_child(heatmap_vbox)
+        self.main_box.append(heatmap_frame)
 
-        return box
+        self.load_projects()
+        self.update_header()
+        self.update_stats()
+
+    def load_projects(self):
+        projects = db.get_projects()
+        self.project_map = {0: None}
+        self.project_model.splice(0, self.project_model.get_n_items(), ["All Projects"])
+        
+        for i, (p_id, p_name) in enumerate(projects):
+            self.project_model.append(p_name)
+            self.project_map[i + 1] = p_id
+            
+    def _on_project_changed(self, dropdown, param):
+        selected_idx = dropdown.get_selected()
+        self.current_project_id = self.project_map.get(selected_idx)
+        self.update_stats()
+
+    def _on_mode_toggled(self, btn, mode):
+        if not btn.get_active(): return
+        self.current_time_range = mode
+        self.update_header()
+        self.update_stats()
+
+    def _on_prev_clicked(self, btn):
+        if self.current_time_range == "day":
+            self.current_date -= timedelta(days=1)
+        elif self.current_time_range == "week":
+            self.current_date -= timedelta(days=7)
+        elif self.current_time_range == "month":
+            self.current_date -= timedelta(days=30)
+            self.current_date = self.current_date.replace(day=1)
+            
+        self.update_header()
+        self.update_stats()
+
+    def _on_next_clicked(self, btn):
+        if self.current_time_range == "day":
+            self.current_date += timedelta(days=1)
+        elif self.current_time_range == "week":
+            self.current_date += timedelta(days=7)
+        elif self.current_time_range == "month":
+            self.current_date += timedelta(days=32)
+            self.current_date = self.current_date.replace(day=1)
+            
+        self.update_header()
+        self.update_stats()
+        
+    def _on_calendar_date_selected(self, cal):
+        date = cal.get_date()
+        self.current_date = datetime(date.get_year(), date.get_month(), date.get_day_of_month())
+        self.cal_btn.get_popover().popdown()
+        self.update_header()
+        self.update_stats()
+
+    def update_header(self):
+        glib_date = GLib.DateTime.new_local(
+            self.current_date.year, 
+            self.current_date.month, 
+            self.current_date.day, 
+            0, 0, 0
+        )
+        self.calendar.set_date(glib_date)
+        
+        if self.current_time_range == "day":
+            self.date_lbl.set_label(self.current_date.strftime("%d/%m/%Y"))
+        elif self.current_time_range == "week":
+            start = self.current_date - timedelta(days=self.current_date.weekday())
+            end = start + timedelta(days=6)
+            self.date_lbl.set_label(f"{start.strftime('%d/%m')} - {end.strftime('%d/%m/%Y')}")
+        elif self.current_time_range == "month":
+            self.date_lbl.set_label(self.current_date.strftime("%B %Y"))
+        else:
+            self.date_lbl.set_label("All Time")
+
+    def _format_time(self, seconds):
+        if seconds < 60:
+            return f"{seconds}s" if seconds > 0 else "0m"
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        if hours > 0:
+            return f"{hours}h {minutes}m"
+        return f"{minutes}m"
 
     def update_stats(self):
-        # We will call this whenever a timer finishes or the page is viewed
-        # TODO: Hook up with real database queries
-        pass
+        tr = self.current_time_range
+        stats = db.get_total_stats(tr, self.current_project_id, self.current_date)
+        
+        self.focus_lbl.set_label(self._format_time(stats["total_focus_seconds"]))
+        self.breaks_lbl.set_label(self._format_time(stats["total_break_seconds"]))
+            
+        graph_data = db.get_graph_data(tr, self.current_project_id, self.current_date)
+        self.graph.set_data(graph_data, tr)
+        
+        heatmap_data = db.get_heatmap_data(self.current_project_id, days=365)
+        self.heatmap.set_data(heatmap_data)
