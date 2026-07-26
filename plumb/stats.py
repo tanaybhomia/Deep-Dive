@@ -195,27 +195,28 @@ class GraphWidget(Gtk.DrawingArea):
 class StatsPage(Gtk.Box):
     def __init__(self, main_window):
         super().__init__(orientation=Gtk.Orientation.VERTICAL)
+        self.set_halign(Gtk.Align.FILL)
+        self.set_hexpand(True)
         self.main_window = main_window
         self.current_project_id = None
         self.current_time_range = "day"
         self.current_date = datetime.now()
 
         scrolled = Gtk.ScrolledWindow()
+        scrolled.set_halign(Gtk.Align.FILL)
         scrolled.set_hexpand(True)
         scrolled.set_vexpand(True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.append(scrolled)
 
-        clamp = Adw.Clamp()
-        clamp.set_maximum_size(650)
-        clamp.set_margin_top(32)
-        clamp.set_margin_bottom(32)
-        clamp.set_margin_start(16)
-        clamp.set_margin_end(16)
-        scrolled.set_child(clamp)
-
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=32)
-        clamp.set_child(self.main_box)
+        self.main_box.set_halign(Gtk.Align.FILL)
+        self.main_box.set_hexpand(True)
+        self.main_box.set_margin_top(32)
+        self.main_box.set_margin_bottom(32)
+        self.main_box.set_margin_start(16)
+        self.main_box.set_margin_end(16)
+        scrolled.set_child(self.main_box)
 
         # 1. Top Toggle (Today | Week | Month | Year)
         self.mode_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
@@ -268,16 +269,17 @@ class StatsPage(Gtk.Box):
         self.main_box.append(summary_box)
         
         # 3. Controls Row (Date Picker + Nav + Project)
-        controls_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        controls_box = Gtk.CenterBox()
         controls_box.set_valign(Gtk.Align.CENTER)
-        
-        date_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        controls_box.set_hexpand(True)
         
         self.cal_btn = Gtk.MenuButton()
         self.cal_btn.add_css_class("flat")
         date_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.date_lbl = Gtk.Label(label="26/07/2026")
         self.date_lbl.add_css_class("heading")
+        self.date_lbl.set_ellipsize(Pango.EllipsizeMode.END)
+        self.date_lbl.set_lines(1)
         date_btn_box.append(self.date_lbl)
         date_btn_box.append(Gtk.Image.new_from_icon_name("pan-down-symbolic"))
         self.cal_btn.set_child(date_btn_box)
@@ -288,8 +290,6 @@ class StatsPage(Gtk.Box):
         cal_popover.set_child(self.calendar)
         self.cal_btn.set_popover(cal_popover)
         
-        date_box.append(self.cal_btn)
-        
         nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         nav_box.add_css_class("linked")
         btn_prev = Gtk.Button(icon_name="go-previous-symbolic")
@@ -299,17 +299,13 @@ class StatsPage(Gtk.Box):
         nav_box.append(btn_prev)
         nav_box.append(btn_next)
         
-        date_box.append(nav_box)
-        controls_box.append(date_box)
-        
-        spacer2 = Gtk.Box()
-        spacer2.set_hexpand(True)
-        controls_box.append(spacer2)
+        controls_box.set_start_widget(self.cal_btn)
+        controls_box.set_center_widget(nav_box)
         
         self.project_model = Gtk.StringList.new(["All Projects"])
         self.project_dropdown = Gtk.DropDown(model=self.project_model)
         self.project_dropdown.connect("notify::selected", self._on_project_changed)
-        controls_box.append(self.project_dropdown)
+        controls_box.set_end_widget(self.project_dropdown)
         
         self.main_box.append(controls_box)
         
@@ -406,7 +402,10 @@ class StatsPage(Gtk.Box):
         elif self.current_time_range == "week":
             start = self.current_date - timedelta(days=self.current_date.weekday())
             end = start + timedelta(days=6)
-            self.date_lbl.set_label(f"{start.strftime('%d/%m')} - {end.strftime('%d/%m/%Y')}")
+            if start.year == end.year and start.year == datetime.now().year:
+                self.date_lbl.set_label(f"{start.strftime('%d %b')} - {end.strftime('%d %b')}")
+            else:
+                self.date_lbl.set_label(f"{start.strftime('%d %b %Y')} - {end.strftime('%d %b %Y')}")
         elif self.current_time_range == "month":
             self.date_lbl.set_label(self.current_date.strftime("%B %Y"))
         else:
