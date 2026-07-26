@@ -576,8 +576,9 @@ class PlumbWindow(Adw.ApplicationWindow):
             ):
                 self._show_overlays()
         else:
-            if not getattr(self, "stopwatch", None) or not self.stopwatch.is_running:
-                self.btn_submerge.set_sensitive(True)
+            self._unblock_websites()
+            sw_active = getattr(self, "stopwatch", None) and self.stopwatch.elapsed_seconds > 0
+            self.btn_submerge.set_sensitive(not (is_active or sw_active))
                 
             self._unblock_websites()
             if self.is_submerged:
@@ -852,11 +853,12 @@ class PlumbWindow(Adw.ApplicationWindow):
         self._set_running_ui_state(False)
         self._update_time_display()
 
+        selected_idx = self.project_dropdown.get_selected()
+        if selected_idx < len(self._projects_map):
+            project_id = self._projects_map[selected_idx][0]
+            db.log_session(project_id, completed_state, completed_duration * 60)
+
         if completed_state == "Focus":
-            selected_idx = self.project_dropdown.get_selected()
-            if selected_idx < len(self._projects_map):
-                project_id = self._projects_map[selected_idx][0]
-                db.log_session(project_id, "pomodoro", completed_duration * 60)
 
             if not self.timer.auto_start_breaks:
                 self._send_notification(
@@ -914,8 +916,8 @@ class PlumbWindow(Adw.ApplicationWindow):
                 
                 self.sw_save_btn.set_sensitive(False)
         else:
-            if not getattr(self, "timer", None) or not self.timer.is_running:
-                self.btn_submerge.set_sensitive(True)
+            pomo_active = getattr(self, "timer", None) and self.timer.time_left < (self.timer.durations.get(self.timer.state, 0) * 60)
+            self.btn_submerge.set_sensitive(not (is_active or pomo_active))
                 
             if self.is_submerged:
                 self.sw_play_pause_btn.set_icon_name("anchor-symbolic")
@@ -973,7 +975,7 @@ class PlumbWindow(Adw.ApplicationWindow):
         if selected_idx < len(self._projects_map):
             project_id = self._projects_map[selected_idx][0]
             if self.stopwatch.elapsed_seconds >= 300:
-                db.log_session(project_id, "timer", self.stopwatch.elapsed_seconds)
+                db.log_session(project_id, "Focus", self.stopwatch.elapsed_seconds)
                 self._show_toast("Timer session saved")
             else:
                 self._show_toast("Session discarded (less than 5 mins)")
