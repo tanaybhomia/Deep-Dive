@@ -120,14 +120,16 @@ class CompactWindow(Gtk.ApplicationWindow):
             
             # Buttons
             if self.main_window.timer.is_running:
-                if self.main_window.timer.state == "Focus" and self.main_window.is_ironclad:
-                    self.btn_play_pause.set_icon_name("security-high-symbolic")
+                is_submerged = getattr(self.main_window, "is_submerged", False)
+                if self.main_window.timer.state == "Focus" and is_submerged:
+                    self.btn_play_pause.set_icon_name("anchor-symbolic")
                     self.btn_play_pause.set_sensitive(False)
-                    self.btn_skip.set_icon_name("process-stop-symbolic")
+                    self.btn_skip.set_label("Give Up")
                     self.btn_skip.add_css_class("destructive-action")
                     self.btn_skip.set_sensitive(True)
                 else:
                     self.btn_play_pause.set_icon_name("media-playback-pause-symbolic")
+                    self.btn_skip.set_label("")
                     self.btn_skip.set_icon_name("media-skip-forward-symbolic")
                     self.btn_skip.remove_css_class("destructive-action")
                     self.btn_skip.set_sensitive(False)
@@ -137,6 +139,7 @@ class CompactWindow(Gtk.ApplicationWindow):
                 self.btn_play_pause.set_icon_name("media-playback-start-symbolic")
                 self.btn_play_pause.set_sensitive(True)
                 self.btn_restart.set_sensitive(True)
+                self.btn_skip.set_label("")
                 self.btn_skip.set_icon_name("media-skip-forward-symbolic")
                 self.btn_skip.remove_css_class("destructive-action")
                 self.btn_skip.set_sensitive(True)
