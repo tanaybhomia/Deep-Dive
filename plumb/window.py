@@ -637,9 +637,6 @@ class PlumbWindow(Adw.ApplicationWindow):
             print(f"Exception starting blocker: {e}")
 
     def _unblock_websites(self):
-        if not getattr(self, "_is_blocked", False):
-            return
-            
         import os, subprocess
         script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "blocker.py"))
         
@@ -850,7 +847,8 @@ class PlumbWindow(Adw.ApplicationWindow):
             app.send_notification("plumb-timer", notification)
 
     def _on_timer_finish(self, completed_state, completed_duration):
-        self._set_running_ui_state(False)
+        if not self.timer.is_running:
+            self._set_running_ui_state(False)
         self._update_time_display()
 
         selected_idx = self.project_dropdown.get_selected()
@@ -916,6 +914,7 @@ class PlumbWindow(Adw.ApplicationWindow):
                 
                 self.sw_save_btn.set_sensitive(False)
         else:
+            self._unblock_websites()
             pomo_active = getattr(self, "timer", None) and self.timer.time_left < (self.timer.durations.get(self.timer.state, 0) * 60)
             self.btn_submerge.set_sensitive(not (is_active or pomo_active))
                 
