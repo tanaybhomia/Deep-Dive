@@ -51,13 +51,15 @@ h1, h2, h3 {
 
 h1 {
     font-size: 2.5rem;
-    font-variation-settings: "wght" 800;
+    font-weight: 900;
+    font-variation-settings: "wght" 900;
     margin-bottom: 0.5rem;
 }
 
 h2 {
     font-size: 2.5rem;
-    font-variation-settings: "wght" 850;
+    font-weight: 900;
+    font-variation-settings: "wght" 900;
     margin-bottom: 2rem;
     text-align: center;
 }
@@ -530,6 +532,9 @@ section {
 
 .donate-hero-content h1 {
     color: #ffffff;
+    font-weight: 900;
+    font-variation-settings: "wght" 900;
+    font-size: 2.5rem;
 }
 
 .donate-hero-content p {
