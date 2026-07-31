@@ -1,0 +1,769 @@
+/* GNOME HIG Inspired Theme */
+
+:root {
+    /* Colors based on GNOME HIG */
+    --bg-color: #241f31; /* Dark 4 */
+    --bg-color-alt: #1e1e1e;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-bg-hover: rgba(255, 255, 255, 0.08);
+    --card-border: rgba(255, 255, 255, 0.1);
+    
+    --text-color: #ffffff; /* Light 1 */
+    --text-dim: #deddda; /* Light 3 */
+    
+    --accent-color: #00e5ff; /* Plumb Cyan Accent */
+    --accent-color-hover: #33ebff; /* Plumb Cyan Lighter */
+    
+    --radius-small: 8px;
+    --radius-medium: 12px;
+    --radius-large: 24px;
+    --radius-pill: 9999px;
+    
+    --features-bg: #1e8254; /* Custom Darker Green for Dark Mode */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-family: 'adwaita sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    scroll-behavior: smooth;
+    line-height: 1.5;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3 {
+    font-family: 'adwaita sans', sans-serif;
+    letter-spacing: -0.02em;
+}
+
+h1 {
+    font-size: 2.5rem;
+    font-variation-settings: "wght" 800;
+    margin-bottom: 0.5rem;
+}
+
+h2 {
+    font-size: 2.5rem;
+    font-variation-settings: "wght" 850;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+h3 {
+    font-size: 1.5rem;
+    font-variation-settings: "wght" 600;
+    margin-bottom: 1rem;
+}
+
+p {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.8rem 1.6rem;
+    font-size: 1rem;
+    font-variation-settings: "wght" 700;
+    text-decoration: none;
+    border-radius: var(--radius-pill);
+    transition: padding 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn:hover {
+    padding: 0.8rem 1.8rem; /* Expands the button, but text size stays the same */
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-download {
+    /* Transparent aesthetic handles this now */
+}
+
+.btn-sponsor {
+    /* Transparent aesthetic handles this now */
+}
+
+
+/* Layout */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+section {
+    width: 100%;
+    max-width: 1200px;
+    padding: 6rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* HERO SECTION */
+#hero {
+    background: 
+        radial-gradient(circle at 15% 0%, rgba(0, 229, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 85% 0%, rgba(0, 150, 255, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, #0a1b2e 0%, #041221 80%);
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    padding: 5rem 2rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    text-align: center;
+    position: relative;
+}
+
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end; /* Push content to bottom so space is at top */
+    max-width: 1400px;
+    width: 100%;
+    height: 100%;
+}
+
+.app-icon {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 1.5rem;
+    padding: 12px;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-medium);
+    /* Remove animation for the outlined icon */
+}
+
+.app-title {
+    margin-bottom: 0.25rem;
+}
+
+.app-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-image-container {
+    width: 100%;
+    max-width: 1400px;
+    flex: 1;
+    min-height: 0; /* Crucial for flex item to shrink */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.hero-image-container picture {
+    display: block;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    text-align: center;
+}
+
+.app-screenshot {
+    width: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    object-position: bottom;
+    border-radius: var(--radius-large) var(--radius-large) 0 0;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 -5px 20px rgba(0, 0, 0, 0.25));
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+/* MARQUEE SECTION */
+#marquee {
+    width: 100vw;
+    max-width: 100vw;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 2rem 0;
+    background-color: #f6f5f4; /* Light background for contrast in Dark Mode */
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.marquee-wrapper {
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+    width: 100%;
+}
+
+.marquee-content {
+    display: flex;
+    flex-shrink: 0;
+    width: max-content;
+    animation: scroll 20s linear infinite;
+    will-change: transform; /* Force hardware acceleration */
+}
+
+.feature-list {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem;
+    padding-right: 1.5rem; /* Matches gap */
+}
+
+.feature-list li {
+    font-size: 1.1rem;
+    font-variation-settings: "wght" 600;
+    white-space: nowrap;
+    color: #241f31; /* Dark text for light marquee */
+    background: #ffffff; /* Solid white pills */
+    padding: 0.6rem 1.5rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); } /* Scrolls half of the flex container (which contains two identical lists) */
+}
+
+/* FEATURES SECTION */
+#features {
+    max-width: 100vw;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+    padding-left: 0;
+    padding-right: 0;
+    background-color: var(--features-bg);
+}
+
+#features h2 {
+    color: #ffffff;
+}
+
+.features-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4rem; /* More spacious */
+    width: 100vw;
+    margin-top: 1rem;
+    padding-bottom: 2rem;
+    scrollbar-width: none;
+}
+
+.features-grid::-webkit-scrollbar {
+    display: none;
+}
+
+.feature-card {
+    background: transparent;
+    border: none;
+    padding: 0 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 min(85vw, 600px);
+}
+
+
+
+.feature-card h3 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    font-variation-settings: "wght" 800;
+    color: #ffffff;
+}
+
+.feature-card p {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.card-image-wrapper {
+    width: 100%;
+    flex: 1; /* Take up remaining vertical space in the card */
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-medium);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center; /* Center horizontally/vertically */
+    justify-content: center;
+}
+
+.card-image-wrapper picture {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Specific styling to scale up the mini mode slightly */
+.mini-mode-picture .card-visual {
+    width: auto;
+    transform: scale(1.25);
+}
+
+.card-visual {
+    width: 100%;
+    height: auto;
+    max-width: 420px; /* Keep image smaller than card to maintain crispness */
+    object-fit: contain;
+    filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.4));
+}
+
+/* GET INVOLVED SECTION */
+#get-involved {
+    padding: 4rem 2rem;
+    width: 100vw;
+    max-width: 100vw;
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--card-border);
+}
+
+.get-involved-container {
+    max-width: 1400px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.get-involved-text h2 {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.get-involved-text p {
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.involvement-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.btn-involve {
+    background-color: #ffffff;
+    border: none;
+    padding: 1.2rem;
+    border-radius: var(--radius-pill);
+    color: #241f31;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 700;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-involve:hover {
+    background-color: #deddda;
+    transform: translateY(-2px);
+}
+
+.conduct-text {
+    font-size: 0.95rem;
+    color: var(--text-dim);
+}
+
+.conduct-text a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.conduct-text a:hover {
+    text-decoration: underline;
+}
+
+.get-involved-image img {
+    width: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.4));
+}
+
+/* SUPPORT US SECTION */
+#support-us {
+    background: linear-gradient(135deg, #813d9c, #c061cb); /* GNOME Dark Pink (Purple 4) to Medium Pink (Purple 2) */
+    padding: 4rem 2rem;
+    text-align: center;
+    width: 100vw;
+    max-width: 100vw;
+}
+
+.support-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.support-content h2 {
+    margin-bottom: 1.5rem;
+    color: #ffffff;
+}
+
+.support-content p {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.btn-donate {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: none;
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    transition: background-color 0.2s ease, padding 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-donate:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    padding: 1rem 3.2rem;
+}
+
+/* DONATE PAGE SPECIFIC */
+#donate-hero {
+    background: 
+        radial-gradient(circle at 15% 0%, rgba(0, 229, 255, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 85% 0%, rgba(0, 150, 255, 0.1) 0%, transparent 50%),
+        linear-gradient(180deg, #0a1b2e 0%, #041221 80%);
+    padding: 8rem 2rem 6rem;
+    width: 100vw;
+    max-width: 100vw;
+}
+
+.donate-hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+.back-link {
+    display: inline-block;
+    color: var(--text-dim);
+    text-decoration: none;
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: var(--text-color);
+}
+
+.donate-hero-content h1 {
+    color: #ffffff;
+}
+
+.donate-hero-content p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.1rem;
+}
+
+#donate-options {
+    background-color: #9141ac; /* GNOME Purple 3 */
+    padding: 6rem 2rem 8rem;
+    text-align: left;
+    width: 100vw;
+    max-width: 100vw;
+}
+
+.donate-options-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.donate-options-content h2 {
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.donate-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 4rem;
+    text-align: left;
+}
+
+.donate-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+}
+
+.donate-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-large);
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.donate-card h3 {
+    color: #ffffff;
+    font-size: 1.6rem;
+}
+
+.donate-card p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.95rem;
+    margin-bottom: 2.5rem;
+    flex-grow: 0;
+}
+
+.upi-pills {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 2.5rem;
+}
+
+.pill {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.4rem 1.2rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pill:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.pill-active {
+    background: var(--accent-color);
+}
+
+.qr-container {
+    background: #ffffff;
+    padding: 1rem;
+    border-radius: var(--radius-medium);
+    margin-bottom: 2rem;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-code {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.donate-icon {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    color: #ffffff;
+    min-height: 200px;
+}
+
+.btn-upi-id, .btn-kofi, .btn-github {
+    width: 100%;
+    padding: 1.2rem;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.btn-upi-id {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.btn-kofi, .btn-github {
+    background: var(--accent-color);
+    color: #ffffff;
+}
+
+.btn-upi-id:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-kofi:hover, .btn-github:hover {
+    background: var(--accent-color-hover);
+}
+
+/* FOOTER */
+footer {
+    background-color: var(--bg-color-alt);
+    padding: 4rem 2rem 2rem;
+    width: 100vw;
+    max-width: 100vw;
+}
+
+.footer-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.footer-columns {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 4rem;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.footer-col h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.footer-col a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+    color: var(--text-color);
+}
+
+.footer-bottom {
+    text-align: center;
+    border-top: 1px solid var(--card-border);
+    padding-top: 2rem;
+    width: 100%;
+}
+
+.footer-bottom p {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+}
+
+/* Grid Pattern Background */
+.grid-bg {
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-color: var(--bg-color-alt);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    h1 { font-size: 2.5rem; }
+    h2 { font-size: 2rem; }
+    .action-buttons { flex-direction: column; width: 100%; }
+    .btn { width: 100%; text-align: center; }
+    .get-involved-container { grid-template-columns: 1fr; }
+    .footer-columns { flex-direction: column; gap: 3rem; }
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        --features-bg: #26a269; /* Standard GNOME Green 5 for Light Mode */
+    }
+    
+    #marquee {
+        background-color: #1e1e1e; /* Dark background for contrast in Light Mode */
+    }
+    
+    .feature-list li {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #hero, #donate-hero {
+        background: linear-gradient(to bottom, #ffffff 0%, #cce4f7 100%);
+        color: #023759;
+    }
+    
+    #hero .btn {
+        background-color: rgba(2, 55, 89, 0.05);
+        color: #023759;
+        border-color: rgba(2, 55, 89, 0.2);
+    }
+    
+    #hero .btn:hover {
+        background-color: rgba(2, 55, 89, 0.1);
+        border-color: rgba(2, 55, 89, 0.3);
+    }
+    
+    #donate-hero h1, #donate-hero p, #hero h1, #hero h2, #hero p {
+        color: #023759;
+    }
+}
