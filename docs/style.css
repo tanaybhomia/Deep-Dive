@@ -19,7 +19,7 @@
     --radius-large: 24px;
     --radius-pill: 9999px;
     
-    --features-bg: #1e8254; /* Custom Darker Green for Dark Mode */
+    --features-bg: #26a269; /* Custom Darker Green for Dark Mode */
 }
 
 *, *::before, *::after {
@@ -137,7 +137,34 @@ section {
     justify-content: space-between;
     text-align: center;
     position: relative;
+    overflow: hidden; /* So bubbles don't spill out */
 }
+
+/* BUBBLES ANIMATION */
+.bubbles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bubble {
+    position: absolute;
+    background-color: transparent;
+    border: 3px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+}
+
+.bubble:nth-child(1) { width: 40px; height: 40px; left: 15%; top: 25%; }
+.bubble:nth-child(2) { width: 20px; height: 20px; left: 28%; top: 60%; }
+.bubble:nth-child(3) { width: 50px; height: 50px; left: 10%; top: 75%; }
+.bubble:nth-child(4) { width: 30px; height: 30px; right: 20%; top: 30%; }
+.bubble:nth-child(5) { width: 60px; height: 60px; right: 12%; top: 65%; }
+.bubble:nth-child(6) { width: 25px; height: 25px; right: 28%; top: 80%; }
 
 .hero-content {
     display: flex;
@@ -734,7 +761,7 @@ footer {
 
 @media (prefers-color-scheme: light) {
     :root {
-        --features-bg: #26a269; /* Standard GNOME Green 5 for Light Mode */
+        --features-bg: #2ec27e; /* Standard GNOME Green 5 for Light Mode */
     }
     
     #marquee {
@@ -761,6 +788,11 @@ footer {
     #hero .btn:hover {
         background-color: rgba(2, 55, 89, 0.1);
         border-color: rgba(2, 55, 89, 0.3);
+    }
+    
+    .bubble {
+        background-color: transparent;
+        border: 3px solid rgba(2, 55, 89, 0.1);
     }
     
     #donate-hero h1, #donate-hero p, #hero h1, #hero h2, #hero p {
