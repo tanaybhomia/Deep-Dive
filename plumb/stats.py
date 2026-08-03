@@ -262,7 +262,6 @@ class StatsPage(Gtk.Box):
         controls_box.set_hexpand(True)
         
         self.cal_btn = Gtk.MenuButton()
-        self.cal_btn.add_css_class("flat")
         self.cal_btn.set_size_request(150, -1)
         date_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.date_lbl = Gtk.Label(label="Day")
