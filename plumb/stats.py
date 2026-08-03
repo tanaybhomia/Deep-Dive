@@ -1,5 +1,6 @@
 import gi
 import math
+import cairo
 from datetime import datetime, timedelta
 
 gi.require_version("Gtk", "4.0")
@@ -7,73 +8,6 @@ gi.require_version("Adw", "1")
 gi.require_version("PangoCairo", "1.0")
 from gi.repository import Gtk, Adw, GLib, Gdk, Pango, PangoCairo
 from plumb.database import db
-
-class HeatmapWidget(Gtk.DrawingArea):
-    def __init__(self):
-        super().__init__()
-        self.set_size_request(-1, 140)
-        self.set_draw_func(self.on_draw)
-        self.heatmap_data = {}
-        self.accent_color = (0, 0, 0, 1)
-        
-    def set_data(self, data):
-        self.heatmap_data = data
-        self.queue_draw()
-        
-    def get_accent_rgba(self):
-        context = self.get_style_context()
-        success, rgba = context.lookup_color("accent_bg_color")
-        if success:
-            return (rgba.red, rgba.green, rgba.blue, rgba.alpha)
-        return (0.2, 0.5, 0.9, 1.0)
-        
-    def on_draw(self, drawing_area, cr, width, height):
-        self.accent_color = self.get_accent_rgba()
-        r, g, b, a = self.accent_color
-        
-        cell_size = 12
-        spacing = 4
-        
-        total_cols = 52
-        total_rows = 7
-        
-        grid_width = total_cols * (cell_size + spacing) - spacing
-        grid_height = total_rows * (cell_size + spacing) - spacing
-        
-        start_x = (width - grid_width) / 2
-        start_y = (height - grid_height) / 2
-        
-        if start_x < 0: start_x = 0
-        if start_y < 0: start_y = 0
-        
-        today = datetime.now()
-        start_date = today - timedelta(days=364)
-        
-        for col in range(total_cols):
-            for row in range(total_rows):
-                date_offset = col * 7 + row
-                current_date = start_date + timedelta(days=date_offset)
-                date_str = current_date.strftime("%Y-%m-%d")
-                
-                seconds = self.heatmap_data.get(date_str, 0)
-                
-                x = start_x + col * (cell_size + spacing)
-                y = start_y + row * (cell_size + spacing)
-                
-                cr.set_source_rgba(r, g, b, 0.1)
-                
-                if seconds > 0:
-                    intensity = min(1.0, 0.2 + (seconds / 14400.0) * 0.8) # max intensity at ~4 hours
-                    cr.set_source_rgba(r, g, b, intensity)
-                
-                radius = 2.5
-                cr.new_path()
-                cr.arc(x + radius, y + radius, radius, math.pi, 3 * math.pi / 2)
-                cr.arc(x + cell_size - radius, y + radius, radius, 3 * math.pi / 2, 2 * math.pi)
-                cr.arc(x + cell_size - radius, y + cell_size - radius, radius, 0, math.pi / 2)
-                cr.arc(x + radius, y + cell_size - radius, radius, math.pi / 2, math.pi)
-                cr.close_path()
-                cr.fill()
 
 class GraphWidget(Gtk.DrawingArea):
     def __init__(self):
@@ -207,6 +141,8 @@ class GraphWidget(Gtk.DrawingArea):
                 x = margin_left + i * (bar_width + bar_spacing)
                 y = height - margin_bottom - bar_h
                 
+                cr.set_source_rgba(r, g, b, 0.85)
+                
                 cr.new_path()
                 radius = min(4, bar_width / 2)
                 cr.arc(x + radius, y + radius, radius, math.pi, 3 * math.pi / 2)
@@ -215,6 +151,28 @@ class GraphWidget(Gtk.DrawingArea):
                 cr.line_to(x, height - margin_bottom)
                 cr.close_path()
                 cr.fill()
+                
+        active_vals = [self.graph_data.get(k, 0) / 60.0 for k in keys if self.graph_data.get(k, 0) > 0]
+        if active_vals and max_minutes > 0:
+            avg_val_minutes = sum(active_vals) / len(active_vals)
+            avg_y = height - margin_bottom - (avg_val_minutes / max_minutes) * graph_height
+            if margin_top <= avg_y <= (height - margin_bottom - 10):
+                cr.save()
+                cr.set_source_rgba(r, g, b, 0.75)
+                cr.set_line_width(1.5)
+                cr.set_dash([5, 4], 0)
+                cr.move_to(margin_left, avg_y)
+                cr.line_to(width - margin_right, avg_y)
+                cr.stroke()
+                cr.restore()
+                
+                cr.set_source_rgba(r, g, b, 0.9)
+                layout = PangoCairo.create_layout(cr)
+                layout.set_text("Avg", -1)
+                layout.set_font_description(Pango.FontDescription.from_string("Sans Bold 9"))
+                _, extents = layout.get_pixel_extents()
+                cr.move_to(width - margin_right - extents.width - 2, avg_y - extents.height - 3)
+                PangoCairo.show_layout(cr, layout)
                 
         cr.set_source_rgba(0.5, 0.5, 0.5, 0.6)
         
@@ -298,32 +256,7 @@ class StatsPage(Gtk.Box):
         self.mode_box.append(self.btn_year)
         self.main_box.append(self.mode_box)
         
-        # 2. Summary Metrics (Total Hours / Total Breaks)
-        summary_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        
-        def create_stat(val, desc):
-            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-            box.set_halign(Gtk.Align.CENTER)
-            val_lbl = Gtk.Label(label=val)
-            val_lbl.add_css_class("title-1")
-            val_lbl.add_css_class("numeric")
-            desc_lbl = Gtk.Label(label=desc)
-            desc_lbl.add_css_class("dim-label")
-            box.append(val_lbl)
-            box.append(desc_lbl)
-            return box, val_lbl
-            
-        focus_box, self.focus_lbl = create_stat("0h 0m", "Total focus time")
-        break_box, self.breaks_lbl = create_stat("0h 0m", "Total break time")
-        
-        summary_box.append(focus_box)
-        spacer1 = Gtk.Box()
-        spacer1.set_hexpand(True)
-        summary_box.append(spacer1)
-        summary_box.append(break_box)
-        self.main_box.append(summary_box)
-        
-        # 3. Controls Row (Date Picker + Nav + Project)
+        # 2. Controls Row (Date Picker + Nav + Project)
         controls_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         controls_box.set_valign(Gtk.Align.CENTER)
         controls_box.set_hexpand(True)
@@ -332,7 +265,7 @@ class StatsPage(Gtk.Box):
         self.cal_btn.add_css_class("flat")
         self.cal_btn.set_size_request(150, -1)
         date_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.date_lbl = Gtk.Label(label="Today")
+        self.date_lbl = Gtk.Label(label="Day")
         self.date_lbl.set_halign(Gtk.Align.START)
         self.date_lbl.set_hexpand(True)
         self.date_lbl.set_ellipsize(Pango.EllipsizeMode.END)
@@ -340,7 +273,7 @@ class StatsPage(Gtk.Box):
         self.date_lbl.set_max_width_chars(12)
         self.date_lbl.set_lines(1)
         date_btn_box.append(self.date_lbl)
-        date_btn_box.append(Gtk.Image.new_from_icon_name("pan-down-symbolic"))
+        date_btn_box.append(Gtk.Image.new_from_icon_name("x-office-calendar-symbolic"))
         self.cal_btn.set_child(date_btn_box)
         
         cal_popover = Gtk.Popover()
@@ -391,32 +324,113 @@ class StatsPage(Gtk.Box):
         self.project_dropdown.connect("notify::selected", self._on_project_changed)
         
         controls_box.append(self.project_dropdown)
-        
         self.main_box.append(controls_box)
         
-        # 4. Graph Widget
+        main_card = Gtk.Frame()
+        main_card.add_css_class("card")
+        main_card.add_css_class("stats-card")
+        main_card_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        
+        summary_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        summary_box.set_margin_top(20)
+        summary_box.set_margin_bottom(16)
+        summary_box.set_margin_start(24)
+        summary_box.set_margin_end(24)
+        
+        def create_stat(val, desc, align_right=False):
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            align = Gtk.Align.END if align_right else Gtk.Align.START
+            box.set_halign(align)
+            val_lbl = Gtk.Label(label=val)
+            val_lbl.add_css_class("title-1")
+            val_lbl.add_css_class("numeric")
+            val_lbl.set_halign(align)
+            desc_lbl = Gtk.Label(label=desc)
+            desc_lbl.add_css_class("dim-label")
+            desc_lbl.set_halign(align)
+            box.append(val_lbl)
+            box.append(desc_lbl)
+            return box, val_lbl
+            
+        focus_box, self.focus_lbl = create_stat("0h 0m", "Total focus time")
+        break_box, self.breaks_lbl = create_stat("0h 0m", "Total break time", align_right=True)
+        
+        summary_box.append(focus_box)
+        spacer1 = Gtk.Box()
+        spacer1.set_hexpand(True)
+        summary_box.append(spacer1)
+        summary_box.append(break_box)
+        main_card_box.append(summary_box)
+        
+        sep = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        main_card_box.append(sep)
+        
         self.graph = GraphWidget()
-        self.main_box.append(self.graph)
+        main_card_box.append(self.graph)
         
-        # 5. Heatmap Widget
-        heatmap_frame = Gtk.Frame()
-        heatmap_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        heatmap_vbox.set_margin_top(16)
-        heatmap_vbox.set_margin_bottom(16)
-        heatmap_vbox.set_margin_start(16)
-        heatmap_vbox.set_margin_end(16)
+        main_card.set_child(main_card_box)
+        self.main_box.append(main_card)
         
-        hm_title = Gtk.Label(label="Contribution Graph")
-        hm_title.add_css_class("heading")
-        hm_title.set_halign(Gtk.Align.START)
-        hm_title.set_margin_bottom(16)
-        heatmap_vbox.append(hm_title)
+        # 4. Productivity Insights Section
+        insights_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        insights_vbox.set_margin_top(8)
         
-        self.heatmap = HeatmapWidget()
-        heatmap_vbox.append(self.heatmap)
+        ins_title = Gtk.Label(label="Productivity Insights")
+        ins_title.add_css_class("heading")
+        ins_title.set_halign(Gtk.Align.START)
+        insights_vbox.append(ins_title)
         
-        heatmap_frame.set_child(heatmap_vbox)
-        self.main_box.append(heatmap_frame)
+        def create_insight_card():
+            frame = Gtk.Frame()
+            frame.add_css_class("card")
+            frame.add_css_class("stats-card")
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            box.set_margin_top(14)
+            box.set_margin_bottom(14)
+            box.set_margin_start(16)
+            box.set_margin_end(16)
+            box.set_hexpand(True)
+            
+            title_lbl = Gtk.Label(label="")
+            title_lbl.add_css_class("dim-label")
+            title_lbl.add_css_class("caption")
+            title_lbl.set_halign(Gtk.Align.START)
+            
+            val_lbl = Gtk.Label(label="-")
+            val_lbl.add_css_class("title-2")
+            val_lbl.set_halign(Gtk.Align.START)
+            val_lbl.set_ellipsize(Pango.EllipsizeMode.END)
+            val_lbl.set_max_width_chars(15)
+            
+            sub_lbl = Gtk.Label(label="-")
+            sub_lbl.add_css_class("dim-label")
+            sub_lbl.add_css_class("caption")
+            sub_lbl.set_halign(Gtk.Align.START)
+            sub_lbl.set_ellipsize(Pango.EllipsizeMode.END)
+            
+            box.append(title_lbl)
+            box.append(val_lbl)
+            box.append(sub_lbl)
+            frame.set_child(box)
+            return frame, title_lbl, val_lbl, sub_lbl
+            
+        row1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        row1.set_homogeneous(True)
+        card_proj, self.lbl_proj_title, self.lbl_proj_val, self.lbl_proj_sub = create_insight_card()
+        card_peak, self.lbl_peak_title, self.lbl_peak_val, self.lbl_peak_sub = create_insight_card()
+        row1.append(card_proj)
+        row1.append(card_peak)
+        
+        row2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        row2.set_homogeneous(True)
+        card_avg, self.lbl_avg_title, self.lbl_avg_val, self.lbl_avg_sub = create_insight_card()
+        card_sess, self.lbl_sess_title, self.lbl_sess_val, self.lbl_sess_sub = create_insight_card()
+        row2.append(card_avg)
+        row2.append(card_sess)
+        
+        insights_vbox.append(row1)
+        insights_vbox.append(row2)
+        self.main_box.append(insights_vbox)
 
         self.load_projects()
         self.update_header()
@@ -588,5 +602,24 @@ class StatsPage(Gtk.Box):
         graph_data = db.get_graph_data(tr, self.current_project_id, self.current_date)
         self.graph.set_data(graph_data, tr, self.current_date)
         
-        heatmap_data = db.get_heatmap_data(self.current_project_id, days=365)
-        self.heatmap.set_data(heatmap_data)
+        insights = db.get_insights(tr, self.current_project_id, self.current_date)
+        
+        # 1. Top Project
+        self.lbl_proj_title.set_label("TOP PROJECT")
+        self.lbl_proj_val.set_label(insights["top_proj_name"])
+        self.lbl_proj_sub.set_label(self._format_time(insights["top_proj_sec"]) if insights["top_proj_sec"] > 0 else "No focus time")
+        
+        # 2. Peak Period
+        self.lbl_peak_title.set_label(insights["peak_label"].upper())
+        self.lbl_peak_val.set_label(insights["peak_val"])
+        self.lbl_peak_sub.set_label(f"{self._format_time(insights['peak_sec'])} focused" if insights['peak_sec'] > 0 else "No peak yet")
+        
+        # 3. Average
+        self.lbl_avg_title.set_label(insights["avg_label"].upper())
+        self.lbl_avg_val.set_label(self._format_time(insights["avg_sec"]) if insights["avg_sec"] > 0 else "0m")
+        self.lbl_avg_sub.set_label(insights["avg_sub"])
+        
+        # 4. Sessions
+        self.lbl_sess_title.set_label("SESSIONS COMPLETED")
+        self.lbl_sess_val.set_label(str(insights["total_count"]))
+        self.lbl_sess_sub.set_label("completed pomodoros")

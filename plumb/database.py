@@ -173,30 +173,121 @@ class Database:
                     
             return stats
 
-    def get_heatmap_data(self, project_id=None, days=365):
-        # We don't use this in the new layout anymore, but keep it around just in case
+    def get_insights(self, time_range="day", project_id=None, ref_date=None):
+        if ref_date is None: ref_date = datetime.now()
+        date_str = ref_date.strftime("%Y-%m-%d")
+        
         with sqlite3.connect(self.db_path) as conn:
-            query = """
-                SELECT date(timestamp, 'localtime') as day, SUM(duration_seconds)
-                FROM sessions
-                WHERE type = 'Focus' AND date(timestamp, 'localtime') >= date('now', 'localtime', ?)
-            """
-            params = [f"-{days} days"]
-            
+            conditions = ["s.type = 'Focus'"]
+            params = []
             if project_id is not None:
-                query += " AND project_id = ?"
+                conditions.append("s.project_id = ?")
                 params.append(project_id)
                 
-            query += " GROUP BY day ORDER BY day ASC"
-            
-            cursor = conn.execute(query, params)
-            rows = cursor.fetchall()
-            
-            heatmap_data = {}
-            for row in rows:
-                heatmap_data[row[0]] = row[1]
+            if time_range == "day":
+                conditions.append("date(s.timestamp, 'localtime') = ?")
+                params.append(date_str)
+            elif time_range == "week":
+                start_of_week = ref_date - timedelta(days=ref_date.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+                conditions.append("date(s.timestamp, 'localtime') >= ? AND date(s.timestamp, 'localtime') <= ?")
+                params.extend([start_of_week.strftime("%Y-%m-%d"), end_of_week.strftime("%Y-%m-%d")])
+            elif time_range == "month":
+                start_of_month = ref_date.replace(day=1)
+                next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+                end_of_month = next_month - timedelta(days=1)
+                conditions.append("date(s.timestamp, 'localtime') >= ? AND date(s.timestamp, 'localtime') <= ?")
+                params.extend([start_of_month.strftime("%Y-%m-%d"), end_of_month.strftime("%Y-%m-%d")])
                 
-            return heatmap_data
+            where_clause = " WHERE " + " AND ".join(conditions)
+            
+            # 1. Top Project
+            query_top_proj = f"""
+                SELECT p.name, SUM(s.duration_seconds) as total
+                FROM sessions s
+                LEFT JOIN projects p ON s.project_id = p.id
+                {where_clause}
+                GROUP BY s.project_id
+                ORDER BY total DESC
+                LIMIT 1
+            """
+            cur = conn.execute(query_top_proj, params)
+            row_proj = cur.fetchone()
+            top_proj_name = (row_proj[0] or "General") if row_proj and row_proj[0] is not None else ("General" if row_proj else "None")
+            top_proj_sec = row_proj[1] if row_proj else 0
+            if top_proj_name == "None" and top_proj_sec == 0:
+                top_proj_name = "-"
+                
+            # 2. Peak Period (Hour for day view, Day for week/month/year)
+            if time_range == "day":
+                query_peak = f"""
+                    SELECT strftime('%H:00', s.timestamp, 'localtime') as hr, SUM(s.duration_seconds) as total
+                    FROM sessions s
+                    {where_clause}
+                    GROUP BY hr
+                    ORDER BY total DESC
+                    LIMIT 1
+                """
+                cur = conn.execute(query_peak, params)
+                row_peak = cur.fetchone()
+                peak_label = "Peak Hour"
+                peak_val = row_peak[0] if row_peak and row_peak[0] else "-"
+                peak_sec = row_peak[1] if row_peak else 0
+            else:
+                query_peak = f"""
+                    SELECT date(s.timestamp, 'localtime') as dt, SUM(s.duration_seconds) as total
+                    FROM sessions s
+                    {where_clause}
+                    GROUP BY dt
+                    ORDER BY total DESC
+                    LIMIT 1
+                """
+                cur = conn.execute(query_peak, params)
+                row_peak = cur.fetchone()
+                peak_label = "Peak Day"
+                if row_peak and row_peak[0]:
+                    try:
+                        dt_obj = datetime.strptime(row_peak[0], "%Y-%m-%d")
+                        peak_val = dt_obj.strftime("%a, %d %b")
+                    except Exception:
+                        peak_val = row_peak[0]
+                    peak_sec = row_peak[1]
+                else:
+                    peak_val = "-"
+                    peak_sec = 0
+                    
+            # 3 & 4. Average Time & Session Count
+            query_totals = f"""
+                SELECT SUM(s.duration_seconds), COUNT(s.id), COUNT(DISTINCT date(s.timestamp, 'localtime'))
+                FROM sessions s
+                {where_clause}
+            """
+            cur = conn.execute(query_totals, params)
+            row_totals = cur.fetchone()
+            total_sec = row_totals[0] or 0
+            total_count = row_totals[1] or 0
+            active_days = row_totals[2] or 0
+            
+            if time_range == "day":
+                avg_label = "Avg Session"
+                avg_sec = (total_sec // total_count) if total_count > 0 else 0
+                avg_sub = "per focus session"
+            else:
+                avg_label = "Daily Average"
+                avg_sec = (total_sec // active_days) if active_days > 0 else 0
+                avg_sub = f"across {active_days} active day{'s' if active_days != 1 else ''}" if active_days > 0 else "no active days"
+                
+            return {
+                "top_proj_name": top_proj_name,
+                "top_proj_sec": top_proj_sec,
+                "peak_label": peak_label,
+                "peak_val": peak_val,
+                "peak_sec": peak_sec,
+                "avg_label": avg_label,
+                "avg_sec": avg_sec,
+                "avg_sub": avg_sub,
+                "total_count": total_count
+            }
 
     def get_graph_data(self, time_range="day", project_id=None, ref_date=None):
         if ref_date is None: ref_date = datetime.now()

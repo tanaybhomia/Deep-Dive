@@ -189,3 +189,11 @@ window:not(.dark-theme).submerge-theme toast label.heading { color: white; }
 window:not(.dark-theme).submerge-theme toast button.text-button, window:not(.dark-theme).submerge-theme toast button.circular, window:not(.dark-theme).submerge-theme toast image { color: white; }
 window:not(.dark-theme).submerge-theme toast button.text-button, window:not(.dark-theme).submerge-theme toast button.circular { background-color: rgba(255, 255, 255, 0.1); }
 window:not(.dark-theme).submerge-theme toast button.text-button:hover, window:not(.dark-theme).submerge-theme toast button.circular:hover { background-color: rgba(255, 255, 255, 0.2); }
+
+/* Softened Stats Compartment Shadows */
+.stats-card {
+    box-shadow: none !important;
+    border: 1px solid rgba(128, 128, 128, 0.15);
+    border-radius: 12px;
+}
+
