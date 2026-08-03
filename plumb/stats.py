@@ -12,7 +12,7 @@ from plumb.database import db
 class GraphWidget(Gtk.DrawingArea):
     def __init__(self):
         super().__init__()
-        self.set_size_request(-1, 240)
+        self.set_size_request(-1, 260)
         self.set_draw_func(self.on_draw)
         self.graph_data = {}
         self.time_range = "day"
@@ -49,32 +49,35 @@ class GraphWidget(Gtk.DrawingArea):
         max_val_seconds = max(self.graph_data.values()) if (self.graph_data and self.graph_data.values()) else 0
         max_val_minutes = max_val_seconds / 60.0
         
-        if max_val_minutes == 0:
-            if self.time_range == "day": max_minutes = 60
-            elif self.time_range == "week": max_minutes = 180
-            elif self.time_range == "month": max_minutes = 720
-            else: max_minutes = 1440
-        elif max_val_minutes <= 15:
-            max_minutes = 15
-        elif max_val_minutes <= 30:
-            max_minutes = 30
-        elif max_val_minutes <= 60:
+        if self.time_range == "day":
             max_minutes = 60
+            y_labels = ["60m", "40m", "20m", "0m"]
         else:
-            target_hours = (max_val_minutes / 60.0) * 1.15
-            nice_hours = [3, 6, 9, 12, 15, 18, 24, 30, 36, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 450, 600, 900, 1200, 1500, 2400, 3000, 5000, 10000]
-            for h in nice_hours:
-                if h >= target_hours:
-                    max_minutes = h * 60
-                    break
+            if max_val_minutes == 0:
+                if self.time_range == "week": max_minutes = 180
+                elif self.time_range == "month": max_minutes = 720
+                else: max_minutes = 1440
+            elif max_val_minutes <= 15:
+                max_minutes = 15
+            elif max_val_minutes <= 30:
+                max_minutes = 30
+            elif max_val_minutes <= 60:
+                max_minutes = 60
             else:
-                max_minutes = int(math.ceil(target_hours / 30.0) * 30) * 60
+                target_hours = (max_val_minutes / 60.0) * 1.15
+                nice_hours = [3, 6, 9, 12, 15, 18, 24, 30, 36, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 450, 600, 900, 1200, 1500, 2400, 3000, 5000, 10000]
+                for h in nice_hours:
+                    if h >= target_hours:
+                        max_minutes = h * 60
+                        break
+                else:
+                    max_minutes = int(math.ceil(target_hours / 30.0) * 30) * 60
 
-        if max_minutes <= 60:
-            y_labels = [f"{int(max_minutes)}m", f"{int(max_minutes*2/3)}m", f"{int(max_minutes/3)}m", "0m"]
-        else:
-            mh = max_minutes // 60
-            y_labels = [f"{int(mh)}h", f"{int(mh*2/3)}h", f"{int(mh/3)}h", "0h"]
+            if max_minutes <= 60:
+                y_labels = [f"{int(max_minutes)}m", f"{int(max_minutes*2/3)}m", f"{int(max_minutes/3)}m", "0m"]
+            else:
+                mh = max_minutes // 60
+                y_labels = [f"{int(mh)}h", f"{int(mh*2/3)}h", f"{int(mh/3)}h", "0h"]
         
         for i, label_text in enumerate(y_labels):
             y = margin_top + i * (graph_height / 3)
@@ -98,14 +101,6 @@ class GraphWidget(Gtk.DrawingArea):
             if active_hours:
                 start_hour = min(active_hours)
                 end_hour = max(active_hours)
-                # Expand range slightly if brief so the bar chart isn't cramped
-                while (end_hour - start_hour) < 4:
-                    if end_hour < 23:
-                        end_hour += 1
-                    elif start_hour > 0:
-                        start_hour -= 1
-                    else:
-                        break
             else:
                 # Default workday window when no sessions recorded yet
                 start_hour = 9
@@ -372,34 +367,46 @@ class StatsPage(Gtk.Box):
         
         # 4. Productivity Insights Section
         insights_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        insights_vbox.set_margin_top(8)
+        insights_vbox.set_margin_top(16)
         
-        ins_title = Gtk.Label(label="Productivity Insights")
-        ins_title.add_css_class("heading")
+        ins_title = Gtk.Label(label="Insights")
+        ins_title.add_css_class("title-2")
         ins_title.set_halign(Gtk.Align.START)
         insights_vbox.append(ins_title)
         
-        def create_insight_card():
+        def create_insight_card(icon_name=None):
             frame = Gtk.Frame()
             frame.add_css_class("card")
             frame.add_css_class("stats-card")
-            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-            box.set_margin_top(14)
-            box.set_margin_bottom(14)
-            box.set_margin_start(16)
-            box.set_margin_end(16)
+            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            box.set_margin_top(16)
+            box.set_margin_bottom(16)
+            box.set_margin_start(18)
+            box.set_margin_end(18)
             box.set_hexpand(True)
             
+            header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             title_lbl = Gtk.Label(label="")
             title_lbl.add_css_class("dim-label")
             title_lbl.add_css_class("caption")
             title_lbl.set_halign(Gtk.Align.START)
+            header_box.append(title_lbl)
+            
+            if icon_name:
+                spacer = Gtk.Box()
+                spacer.set_hexpand(True)
+                header_box.append(spacer)
+                icon = Gtk.Image.new_from_icon_name(icon_name)
+                icon.add_css_class("dim-label")
+                header_box.append(icon)
             
             val_lbl = Gtk.Label(label="-")
             val_lbl.add_css_class("title-2")
+            val_lbl.add_css_class("numeric")
             val_lbl.set_halign(Gtk.Align.START)
             val_lbl.set_ellipsize(Pango.EllipsizeMode.END)
             val_lbl.set_max_width_chars(15)
+            val_lbl.set_margin_top(4)
             
             sub_lbl = Gtk.Label(label="-")
             sub_lbl.add_css_class("dim-label")
@@ -407,7 +414,7 @@ class StatsPage(Gtk.Box):
             sub_lbl.set_halign(Gtk.Align.START)
             sub_lbl.set_ellipsize(Pango.EllipsizeMode.END)
             
-            box.append(title_lbl)
+            box.append(header_box)
             box.append(val_lbl)
             box.append(sub_lbl)
             frame.set_child(box)
@@ -415,15 +422,15 @@ class StatsPage(Gtk.Box):
             
         row1 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         row1.set_homogeneous(True)
-        card_proj, self.lbl_proj_title, self.lbl_proj_val, self.lbl_proj_sub = create_insight_card()
-        card_peak, self.lbl_peak_title, self.lbl_peak_val, self.lbl_peak_sub = create_insight_card()
+        card_proj, self.lbl_proj_title, self.lbl_proj_val, self.lbl_proj_sub = create_insight_card("folder-documents-symbolic")
+        card_peak, self.lbl_peak_title, self.lbl_peak_val, self.lbl_peak_sub = create_insight_card("starred-symbolic")
         row1.append(card_proj)
         row1.append(card_peak)
         
         row2 = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         row2.set_homogeneous(True)
-        card_avg, self.lbl_avg_title, self.lbl_avg_val, self.lbl_avg_sub = create_insight_card()
-        card_sess, self.lbl_sess_title, self.lbl_sess_val, self.lbl_sess_sub = create_insight_card()
+        card_avg, self.lbl_avg_title, self.lbl_avg_val, self.lbl_avg_sub = create_insight_card("document-open-recent-symbolic")
+        card_sess, self.lbl_sess_title, self.lbl_sess_val, self.lbl_sess_sub = create_insight_card("object-select-symbolic")
         row2.append(card_avg)
         row2.append(card_sess)
         

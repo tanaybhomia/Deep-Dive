@@ -303,9 +303,37 @@ class Database:
                 params.append(project_id)
                 
             if time_range == "day":
-                conditions.append("date(timestamp, 'localtime') = ?")
-                params.append(date_str)
-                query = "SELECT strftime('%H', timestamp, 'localtime') as hour, SUM(duration_seconds) FROM sessions WHERE " + " AND ".join(conditions) + " GROUP BY hour ORDER BY hour ASC"
+                prev_date_str = (ref_date - timedelta(days=1)).strftime("%Y-%m-%d")
+                next_date_str = (ref_date + timedelta(days=1)).strftime("%Y-%m-%d")
+                conditions.append("date(timestamp, 'localtime') >= ? AND date(timestamp, 'localtime') <= ?")
+                params.extend([prev_date_str, next_date_str])
+                query = "SELECT datetime(timestamp, 'localtime'), duration_seconds FROM sessions WHERE " + " AND ".join(conditions)
+                cursor = conn.execute(query, params)
+                rows = cursor.fetchall()
+                
+                graph_data = {f"{i:02d}": 0.0 for i in range(24)}
+                for row in rows:
+                    try:
+                        end_dt = datetime.fromisoformat(str(row[0]).replace(" ", "T"))
+                    except Exception:
+                        continue
+                    dur_sec = float(row[1] or 0)
+                    if dur_sec <= 0:
+                        continue
+                    start_dt = end_dt - timedelta(seconds=dur_sec)
+                    
+                    curr = start_dt
+                    while curr < end_dt:
+                        next_hour = (curr.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
+                        chunk_end = min(end_dt, next_hour)
+                        chunk_dur = (chunk_end - curr).total_seconds()
+                        
+                        if curr.strftime("%Y-%m-%d") == date_str and chunk_dur > 0:
+                            hour_key = curr.strftime("%H")
+                            graph_data[hour_key] = graph_data.get(hour_key, 0.0) + chunk_dur
+                        curr = chunk_end
+                        
+                return graph_data
             elif time_range == "week":
                 start_of_week = ref_date - timedelta(days=ref_date.weekday())
                 end_of_week = start_of_week + timedelta(days=6)
