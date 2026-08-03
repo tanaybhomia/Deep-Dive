@@ -394,6 +394,8 @@ class PlumbWindow(Adw.ApplicationWindow):
             index = pages.index(name)
             target_widget = self.carousel.get_nth_page(index)
             self.carousel.scroll_to(target_widget, True)
+            if name == "stats" and hasattr(self, 'stats_page'):
+                self.stats_page.update_stats()
 
     def _build_pomodoro_page(self):
         page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=48)
@@ -670,6 +672,16 @@ class PlumbWindow(Adw.ApplicationWindow):
             dialog.connect("response", on_response)
             dialog.present()
             return
+
+        total_secs = self.timer.durations.get(self.timer.state, 0) * 60
+        worked_secs = total_secs - self.timer.time_left
+        if worked_secs > 0:
+            selected_idx = self.project_dropdown.get_selected()
+            if selected_idx < len(self._projects_map):
+                project_id = self._projects_map[selected_idx][0]
+                db.log_session(project_id, self.timer.state, worked_secs)
+                if hasattr(self, 'stats_page'):
+                    self.stats_page.update_stats()
 
         self.timer.pause()
         self.timer.next_state()
@@ -973,11 +985,14 @@ class PlumbWindow(Adw.ApplicationWindow):
         selected_idx = self.sw_project_dropdown.get_selected()
         if selected_idx < len(self._projects_map):
             project_id = self._projects_map[selected_idx][0]
-            if self.stopwatch.elapsed_seconds >= 300:
+            min_save_time = int(db.get_setting("sw_min_save_time", "25")) * 60
+            if self.stopwatch.elapsed_seconds >= min_save_time:
                 db.log_session(project_id, "Focus", self.stopwatch.elapsed_seconds)
                 self._show_toast("Timer session saved")
+                if hasattr(self, 'stats_page'):
+                    self.stats_page.update_stats()
             else:
-                self._show_toast("Session discarded (less than 5 mins)")
+                self._show_toast(f"Session discarded (less than {min_save_time//60} mins)")
 
         self.stopwatch.reset()
         self._set_sw_running_ui_state(False)

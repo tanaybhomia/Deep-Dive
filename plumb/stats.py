@@ -67,6 +67,7 @@ class HeatmapWidget(Gtk.DrawingArea):
                     cr.set_source_rgba(r, g, b, intensity)
                 
                 radius = 2.5
+                cr.new_path()
                 cr.arc(x + radius, y + radius, radius, math.pi, 3 * math.pi / 2)
                 cr.arc(x + cell_size - radius, y + radius, radius, 3 * math.pi / 2, 2 * math.pi)
                 cr.arc(x + cell_size - radius, y + cell_size - radius, radius, 0, math.pi / 2)
@@ -83,9 +84,10 @@ class GraphWidget(Gtk.DrawingArea):
         self.time_range = "day"
         self.accent_color = (0, 0, 0, 1)
         
-    def set_data(self, data, time_range):
+    def set_data(self, data, time_range, ref_date=None):
         self.graph_data = data
         self.time_range = time_range
+        self.ref_date = ref_date or datetime.now()
         self.queue_draw()
 
     def get_accent_rgba(self):
@@ -100,7 +102,7 @@ class GraphWidget(Gtk.DrawingArea):
         r, g, b, a = self.accent_color
         
         margin_left = 50
-        margin_right = 10
+        margin_right = 25
         margin_top = 20
         margin_bottom = 30
         
@@ -110,13 +112,35 @@ class GraphWidget(Gtk.DrawingArea):
         if graph_width <= 0 or graph_height <= 0: return
         
         max_minutes = 60
-        if self.graph_data:
-            max_val_seconds = max(self.graph_data.values()) if self.graph_data.values() else 0
-            max_val_minutes = max_val_seconds / 60
-            if max_val_minutes > 60: max_minutes = 120
-            if max_val_minutes > 120: max_minutes = int(max_val_minutes * 1.2)
-            
-        y_labels = [f"{int(max_minutes)}m", f"{int(max_minutes*2/3)}m", f"{int(max_minutes/3)}m", "0m"]
+        max_val_seconds = max(self.graph_data.values()) if (self.graph_data and self.graph_data.values()) else 0
+        max_val_minutes = max_val_seconds / 60.0
+        
+        if max_val_minutes == 0:
+            if self.time_range == "day": max_minutes = 60
+            elif self.time_range == "week": max_minutes = 180
+            elif self.time_range == "month": max_minutes = 720
+            else: max_minutes = 1440
+        elif max_val_minutes <= 15:
+            max_minutes = 15
+        elif max_val_minutes <= 30:
+            max_minutes = 30
+        elif max_val_minutes <= 60:
+            max_minutes = 60
+        else:
+            target_hours = (max_val_minutes / 60.0) * 1.15
+            nice_hours = [3, 6, 9, 12, 15, 18, 24, 30, 36, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 450, 600, 900, 1200, 1500, 2400, 3000, 5000, 10000]
+            for h in nice_hours:
+                if h >= target_hours:
+                    max_minutes = h * 60
+                    break
+            else:
+                max_minutes = int(math.ceil(target_hours / 30.0) * 30) * 60
+
+        if max_minutes <= 60:
+            y_labels = [f"{int(max_minutes)}m", f"{int(max_minutes*2/3)}m", f"{int(max_minutes/3)}m", "0m"]
+        else:
+            mh = max_minutes // 60
+            y_labels = [f"{int(mh)}h", f"{int(mh*2/3)}h", f"{int(mh/3)}h", "0h"]
         
         for i, label_text in enumerate(y_labels):
             y = margin_top + i * (graph_height / 3)
@@ -127,26 +151,44 @@ class GraphWidget(Gtk.DrawingArea):
             cr.stroke()
             
             cr.set_source_rgba(0.5, 0.5, 0.5, 0.6)
-            layout = self.create_pango_layout(label_text)
+            layout = PangoCairo.create_layout(cr)
+            layout.set_text(label_text, -1)
             layout.set_font_description(Pango.FontDescription.from_string("Sans 10"))
             _, extents = layout.get_pixel_extents()
             cr.move_to(margin_left - extents.width - 8, y - extents.height / 2)
             PangoCairo.show_layout(cr, layout)
             
         keys = []
-        x_labels = []
         if self.time_range == "day":
-            keys = [f"{i:02d}" for i in range(24)]
-            x_labels = ["0:00", "6:00", "12:00", "18:00"]
+            active_hours = [int(k) for k, v in self.graph_data.items() if v > 0] if self.graph_data else []
+            if active_hours:
+                start_hour = min(active_hours)
+                end_hour = max(active_hours)
+                # Expand range slightly if brief so the bar chart isn't cramped
+                while (end_hour - start_hour) < 4:
+                    if end_hour < 23:
+                        end_hour += 1
+                    elif start_hour > 0:
+                        start_hour -= 1
+                    else:
+                        break
+            else:
+                # Default workday window when no sessions recorded yet
+                start_hour = 9
+                end_hour = 17
+            keys = [f"{i:02d}" for i in range(start_hour, end_hour + 1)]
         elif self.time_range == "week":
             keys = [str(i) for i in range(7)]
-            x_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
         elif self.time_range == "month":
-            keys = [f"{i:02d}" for i in range(1, 32)]
-            x_labels = ["1", "8", "15", "22", "29"]
+            ref_date = getattr(self, "ref_date", datetime.now())
+            if ref_date.month == 12:
+                num_days = 31
+            else:
+                num_days = (datetime(ref_date.year, ref_date.month + 1, 1) - timedelta(days=1)).day
+            keys = [f"{i:02d}" for i in range(1, num_days + 1)]
         else:
-            keys = sorted(list(self.graph_data.keys())) if self.graph_data else []
-            x_labels = keys
+            ref_year = getattr(self, "ref_date", datetime.now()).year
+            keys = [f"{ref_year}-{i:02d}" for i in range(1, 13)]
             
         if not keys: return
         
@@ -165,6 +207,7 @@ class GraphWidget(Gtk.DrawingArea):
                 x = margin_left + i * (bar_width + bar_spacing)
                 y = height - margin_bottom - bar_h
                 
+                cr.new_path()
                 radius = min(4, bar_width / 2)
                 cr.arc(x + radius, y + radius, radius, math.pi, 3 * math.pi / 2)
                 cr.arc(x + bar_width - radius, y + radius, radius, 3 * math.pi / 2, 2 * math.pi)
@@ -175,22 +218,37 @@ class GraphWidget(Gtk.DrawingArea):
                 
         cr.set_source_rgba(0.5, 0.5, 0.5, 0.6)
         
+        def draw_x_label(idx, text):
+            x = margin_left + idx * (bar_width + bar_spacing) + bar_width / 2
+            layout = PangoCairo.create_layout(cr)
+            layout.set_text(text, -1)
+            layout.set_font_description(Pango.FontDescription.from_string("Sans 10"))
+            _, extents = layout.get_pixel_extents()
+            cr.move_to(x - extents.width / 2, height - margin_bottom + 8)
+            PangoCairo.show_layout(cr, layout)
+        
         if self.time_range == "day":
-            for i, label_text in enumerate(x_labels):
-                x = margin_left + i * (graph_width / 3)
-                layout = self.create_pango_layout(label_text)
-                layout.set_font_description(Pango.FontDescription.from_string("Sans 10"))
-                _, extents = layout.get_pixel_extents()
-                cr.move_to(x - extents.width / 2, height - margin_bottom + 8)
-                PangoCairo.show_layout(cr, layout)
+            num_keys = len(keys)
+            step = 1 if num_keys <= 8 else (2 if num_keys <= 14 else 4)
+            for i, key in enumerate(keys):
+                if i == 0 or i == num_keys - 1 or (i % step == 0 and (num_keys - 1 - i) * (bar_width + bar_spacing) > 35):
+                    draw_x_label(i, f"{int(key)}:00")
         elif self.time_range == "week":
+            x_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
             for i, label_text in enumerate(x_labels):
-                x = margin_left + i * (bar_width + bar_spacing) + bar_width / 2
-                layout = self.create_pango_layout(label_text)
-                layout.set_font_description(Pango.FontDescription.from_string("Sans 10"))
-                _, extents = layout.get_pixel_extents()
-                cr.move_to(x - extents.width / 2, height - margin_bottom + 8)
-                PangoCairo.show_layout(cr, layout)
+                draw_x_label(i, label_text)
+        elif self.time_range == "month":
+            for i, key in enumerate(keys):
+                day_num = int(key)
+                if day_num in [1, 8, 15, 22, 29]:
+                    draw_x_label(i, str(day_num))
+        else:
+            months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+            for i, month_text in enumerate(months):
+                if i < len(keys):
+                    if graph_width < 350 and i % 2 != 0:
+                        continue
+                    draw_x_label(i, month_text)
 
 class StatsPage(Gtk.Box):
     def __init__(self, main_window):
@@ -428,7 +486,7 @@ class StatsPage(Gtk.Box):
         self.breaks_lbl.set_label(self._format_time(stats["total_break_seconds"]))
             
         graph_data = db.get_graph_data(tr, self.current_project_id, self.current_date)
-        self.graph.set_data(graph_data, tr)
+        self.graph.set_data(graph_data, tr, self.current_date)
         
         heatmap_data = db.get_heatmap_data(self.current_project_id, days=365)
         self.heatmap.set_data(heatmap_data)
