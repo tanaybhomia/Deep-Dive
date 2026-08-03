@@ -228,13 +228,13 @@ class GraphWidget(Gtk.DrawingArea):
             PangoCairo.show_layout(cr, layout)
         
         if self.time_range == "day":
-            num_keys = len(keys)
-            step = 1 if num_keys <= 8 else (2 if num_keys <= 14 else 4)
+            dist = bar_width + bar_spacing
+            step = max(1, int(math.ceil(45.0 / dist))) if dist > 0 else 1
             for i, key in enumerate(keys):
-                if i == 0 or i == num_keys - 1 or (i % step == 0 and (num_keys - 1 - i) * (bar_width + bar_spacing) > 35):
+                if i % step == 0:
                     draw_x_label(i, f"{int(key)}:00")
         elif self.time_range == "week":
-            x_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+            x_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
             for i, label_text in enumerate(x_labels):
                 draw_x_label(i, label_text)
         elif self.time_range == "month":
@@ -284,11 +284,8 @@ class StatsPage(Gtk.Box):
         self.btn_day = Gtk.ToggleButton(label="Today")
         self.btn_day.set_active(True)
         self.btn_week = Gtk.ToggleButton(label="Week")
-        self.btn_week.set_group(self.btn_day)
         self.btn_month = Gtk.ToggleButton(label="Month")
-        self.btn_month.set_group(self.btn_day)
         self.btn_year = Gtk.ToggleButton(label="Year")
-        self.btn_year.set_group(self.btn_day)
         
         self.btn_day.connect("toggled", self._on_mode_toggled, "day")
         self.btn_week.connect("toggled", self._on_mode_toggled, "week")
@@ -327,16 +324,20 @@ class StatsPage(Gtk.Box):
         self.main_box.append(summary_box)
         
         # 3. Controls Row (Date Picker + Nav + Project)
-        controls_box = Gtk.CenterBox()
+        controls_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         controls_box.set_valign(Gtk.Align.CENTER)
         controls_box.set_hexpand(True)
         
         self.cal_btn = Gtk.MenuButton()
         self.cal_btn.add_css_class("flat")
+        self.cal_btn.set_size_request(150, -1)
         date_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.date_lbl = Gtk.Label(label="26/07/2026")
-        self.date_lbl.add_css_class("heading")
+        self.date_lbl = Gtk.Label(label="Today")
+        self.date_lbl.set_halign(Gtk.Align.START)
+        self.date_lbl.set_hexpand(True)
         self.date_lbl.set_ellipsize(Pango.EllipsizeMode.END)
+        self.date_lbl.set_width_chars(12)
+        self.date_lbl.set_max_width_chars(12)
         self.date_lbl.set_lines(1)
         date_btn_box.append(self.date_lbl)
         date_btn_box.append(Gtk.Image.new_from_icon_name("pan-down-symbolic"))
@@ -350,20 +351,46 @@ class StatsPage(Gtk.Box):
         
         nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         nav_box.add_css_class("linked")
-        btn_prev = Gtk.Button(icon_name="go-previous-symbolic")
-        btn_prev.connect("clicked", self._on_prev_clicked)
-        btn_next = Gtk.Button(icon_name="go-next-symbolic")
-        btn_next.connect("clicked", self._on_next_clicked)
-        nav_box.append(btn_prev)
-        nav_box.append(btn_next)
+        self.btn_prev = Gtk.Button(icon_name="go-previous-symbolic")
+        self.btn_prev.connect("clicked", self._on_prev_clicked)
+        self.btn_next = Gtk.Button(icon_name="go-next-symbolic")
+        self.btn_next.connect("clicked", self._on_next_clicked)
+        nav_box.append(self.btn_prev)
+        nav_box.append(self.btn_next)
         
-        controls_box.set_start_widget(self.cal_btn)
-        controls_box.set_center_widget(nav_box)
+        date_nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        date_nav_box.append(nav_box)
+        date_nav_box.append(self.cal_btn)
+        controls_box.append(date_nav_box)
+        
+        spacer2 = Gtk.Box()
+        spacer2.set_hexpand(True)
+        controls_box.append(spacer2)
         
         self.project_model = Gtk.StringList.new(["All Projects"])
         self.project_dropdown = Gtk.DropDown(model=self.project_model)
+        self.project_dropdown.set_size_request(150, -1)
+        
+        def setup_dropdown_cb(factory, item):
+            lbl = Gtk.Label()
+            lbl.set_halign(Gtk.Align.START)
+            lbl.set_hexpand(True)
+            lbl.set_ellipsize(Pango.EllipsizeMode.END)
+            lbl.set_width_chars(12)
+            lbl.set_max_width_chars(12)
+            item.set_child(lbl)
+            
+        def bind_dropdown_cb(factory, item):
+            obj = item.get_item()
+            item.get_child().set_label(obj.get_string() if obj else "")
+            
+        dropdown_factory = Gtk.SignalListItemFactory()
+        dropdown_factory.connect("setup", setup_dropdown_cb)
+        dropdown_factory.connect("bind", bind_dropdown_cb)
+        self.project_dropdown.set_factory(dropdown_factory)
         self.project_dropdown.connect("notify::selected", self._on_project_changed)
-        controls_box.set_end_widget(self.project_dropdown)
+        
+        controls_box.append(self.project_dropdown)
         
         self.main_box.append(controls_box)
         
@@ -411,11 +438,17 @@ class StatsPage(Gtk.Box):
 
     def _on_mode_toggled(self, btn, mode):
         if not btn.get_active(): return
+        buttons = [self.btn_day, self.btn_week, self.btn_month, self.btn_year]
+        for b in buttons:
+            if b != btn and b.get_active():
+                b.set_active(False)
         self.current_time_range = mode
         self.update_header()
         self.update_stats()
 
     def _on_prev_clicked(self, btn):
+        if not hasattr(self, "btn_prev") or not self.btn_prev.get_sensitive():
+            return
         if self.current_time_range == "day":
             self.current_date -= timedelta(days=1)
         elif self.current_time_range == "week":
@@ -428,6 +461,8 @@ class StatsPage(Gtk.Box):
         self.update_stats()
 
     def _on_next_clicked(self, btn):
+        if not hasattr(self, "btn_next") or not self.btn_next.get_sensitive():
+            return
         if self.current_time_range == "day":
             self.current_date += timedelta(days=1)
         elif self.current_time_range == "week":
@@ -441,7 +476,19 @@ class StatsPage(Gtk.Box):
         
     def _on_calendar_date_selected(self, cal):
         date = cal.get_date()
-        self.current_date = datetime(date.get_year(), date.get_month(), date.get_day_of_month())
+        new_date = datetime(date.get_year(), date.get_month(), date.get_day_of_month())
+        if new_date.date() == self.current_date.date():
+            return
+            
+        now = datetime.now()
+        earliest_date = db.get_earliest_date()
+        
+        if new_date.date() > now.date():
+            new_date = now
+        elif new_date.date() < earliest_date:
+            new_date = datetime(earliest_date.year, earliest_date.month, earliest_date.day)
+            
+        self.current_date = new_date
         self.cal_btn.get_popover().popdown()
         self.update_header()
         self.update_stats()
@@ -455,19 +502,68 @@ class StatsPage(Gtk.Box):
         )
         self.calendar.set_date(glib_date)
         
+        now = datetime.now()
+        earliest_date = db.get_earliest_date()
+        can_move_next = True
+        can_move_prev = True
+        
         if self.current_time_range == "day":
-            self.date_lbl.set_label(self.current_date.strftime("%d/%m/%Y"))
+            cur_date = self.current_date.date()
+            if cur_date == now.date():
+                self.date_lbl.set_label("Today")
+            elif cur_date == (now - timedelta(days=1)).date():
+                self.date_lbl.set_label("Yesterday")
+            elif cur_date == (now + timedelta(days=1)).date():
+                self.date_lbl.set_label("Tomorrow")
+            elif cur_date.year == now.year:
+                self.date_lbl.set_label(self.current_date.strftime("%d %b"))
+            else:
+                self.date_lbl.set_label(self.current_date.strftime("%d %b %Y"))
+            if cur_date >= now.date():
+                can_move_next = False
+            if cur_date <= earliest_date:
+                can_move_prev = False
         elif self.current_time_range == "week":
             start = self.current_date - timedelta(days=self.current_date.weekday())
             end = start + timedelta(days=6)
-            if start.year == end.year and start.year == datetime.now().year:
-                self.date_lbl.set_label(f"{start.strftime('%d %b')} - {end.strftime('%d %b')}")
+            if start.year == end.year and start.year == now.year:
+                if start.month == end.month:
+                    self.date_lbl.set_label(f"{start.strftime('%d')} - {end.strftime('%d %b')}")
+                else:
+                    self.date_lbl.set_label(f"{start.strftime('%d %b')} - {end.strftime('%d %b')}")
+            elif start.year == end.year:
+                if start.month == end.month:
+                    self.date_lbl.set_label(f"{start.strftime('%d')} - {end.strftime('%d %b %Y')}")
+                else:
+                    self.date_lbl.set_label(f"{start.strftime('%d %b')} - {end.strftime('%d %b %Y')}")
             else:
                 self.date_lbl.set_label(f"{start.strftime('%d %b %Y')} - {end.strftime('%d %b %Y')}")
+            now_start = now - timedelta(days=now.weekday())
+            earliest_start = earliest_date - timedelta(days=earliest_date.weekday())
+            if start.date() >= now_start.date():
+                can_move_next = False
+            if start.date() <= earliest_start:
+                can_move_prev = False
         elif self.current_time_range == "month":
-            self.date_lbl.set_label(self.current_date.strftime("%B %Y"))
+            if self.current_date.year == now.year:
+                self.date_lbl.set_label(self.current_date.strftime("%b"))
+            else:
+                self.date_lbl.set_label(self.current_date.strftime("%b %Y"))
+            if (self.current_date.year, self.current_date.month) >= (now.year, now.month):
+                can_move_next = False
+            if (self.current_date.year, self.current_date.month) <= (earliest_date.year, earliest_date.month):
+                can_move_prev = False
         else:
             self.date_lbl.set_label("All Time")
+            if self.current_date.year >= now.year:
+                can_move_next = False
+            if self.current_date.year <= earliest_date.year:
+                can_move_prev = False
+                
+        if hasattr(self, "btn_prev"):
+            self.btn_prev.set_sensitive(can_move_prev)
+        if hasattr(self, "btn_next"):
+            self.btn_next.set_sensitive(can_move_next)
 
     def _format_time(self, seconds):
         if seconds < 60:

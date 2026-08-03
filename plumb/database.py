@@ -1,6 +1,6 @@
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class Database:
@@ -249,6 +249,30 @@ class Database:
                     graph_data[row[0]] = row[1]
                 
             return graph_data
+
+    def get_earliest_date(self):
+        earliest_dt = None
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("SELECT MIN(date(timestamp, 'localtime')) FROM sessions")
+                row = cursor.fetchone()
+                if row and row[0]:
+                    earliest_dt = datetime.strptime(row[0], "%Y-%m-%d").date()
+        except Exception:
+            pass
+            
+        if not earliest_dt:
+            try:
+                if os.path.exists(self.db_path):
+                    mtime = os.path.getmtime(self.db_path)
+                    earliest_dt = datetime.fromtimestamp(mtime).date()
+            except Exception:
+                pass
+                
+        if not earliest_dt:
+            earliest_dt = datetime.now().date()
+            
+        return earliest_dt
 
 
 db = Database()
