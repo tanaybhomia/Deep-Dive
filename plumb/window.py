@@ -600,6 +600,7 @@ class PlumbWindow(Adw.ApplicationWindow):
 
         self.sw_time_label = Gtk.Label(label="00:00")
         self.sw_time_label.add_css_class("huge-timer")
+        self.sw_time_label.set_margin_bottom(30)
 
         middle_container = Gtk.CenterBox()
         middle_container.set_size_request(-1, 140)

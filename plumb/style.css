@@ -84,9 +84,9 @@ button.play-circular:active {
 
 /* Huge Stopwatch Timer */
 .huge-timer {
-    font-size: 84px;
+    font-size: 112px;
     font-weight: 800;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
 }
 
 /* Break Overlay Styling */
