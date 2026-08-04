@@ -503,7 +503,7 @@ class StatsPage(Gtk.Box):
         
         insights_vbox.append(row1)
         insights_vbox.append(row2)
-        self.main_box.append(insights_vbox)
+        # self.main_box.append(insights_vbox)  # Hidden for future refinement
 
         self.load_projects()
         self.update_header()
@@ -675,25 +675,3 @@ class StatsPage(Gtk.Box):
         graph_data = db.get_graph_data(tr, self.current_project_id, self.current_date)
         tooltip_data = db.get_graph_tooltips(tr, self.current_project_id, self.current_date)
         self.graph.set_data(graph_data, tr, self.current_date, tooltip_data)
-        
-        insights = db.get_insights(tr, self.current_project_id, self.current_date)
-        
-        # 1. Top Project
-        self.lbl_proj_title.set_label("TOP PROJECT")
-        self.lbl_proj_val.set_label(insights["top_proj_name"])
-        self.lbl_proj_sub.set_label(self._format_time(insights["top_proj_sec"]) if insights["top_proj_sec"] > 0 else "No focus time")
-        
-        # 2. Peak Period
-        self.lbl_peak_title.set_label(insights["peak_label"].upper())
-        self.lbl_peak_val.set_label(insights["peak_val"])
-        self.lbl_peak_sub.set_label(f"{self._format_time(insights['peak_sec'])} focused" if insights['peak_sec'] > 0 else "No peak yet")
-        
-        # 3. Average
-        self.lbl_avg_title.set_label(insights["avg_label"].upper())
-        self.lbl_avg_val.set_label(self._format_time(insights["avg_sec"]) if insights["avg_sec"] > 0 else "0m")
-        self.lbl_avg_sub.set_label(insights["avg_sub"])
-        
-        # 4. Sessions
-        self.lbl_sess_title.set_label("SESSIONS COMPLETED")
-        self.lbl_sess_val.set_label(str(insights["total_count"]))
-        self.lbl_sess_sub.set_label("completed pomodoros")

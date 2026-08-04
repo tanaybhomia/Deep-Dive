@@ -8,6 +8,107 @@ from plumb.timer import TimerLogic, StopwatchLogic
 from plumb.database import db
 
 import random
+import math
+import cairo
+
+
+class SegmentedProgressBar(Gtk.DrawingArea):
+    def __init__(self, segments=4):
+        super().__init__()
+        self.set_size_request(-1, 56)
+        self.set_hexpand(True)
+        self.fraction = 0.0
+        self.current_segment = 1
+        self.total_segments = segments
+        self.set_draw_func(self.on_draw)
+
+    def set_fraction(self, fraction):
+        new_frac = max(0.0, min(1.0, fraction))
+        if abs(self.fraction - new_frac) > 0.001 or (new_frac in (0.0, 1.0) and self.fraction != new_frac):
+            self.fraction = new_frac
+            self.queue_draw()
+
+    def set_cycle_info(self, current_cycle, total_cycles):
+        if total_cycles > 0 and (self.current_segment != current_cycle or self.total_segments != total_cycles):
+            self.current_segment = current_cycle
+            self.total_segments = total_cycles
+            self.queue_draw()
+
+    def add_css_class(self, css_class):
+        super().add_css_class(css_class)
+        self.queue_draw()
+
+    def remove_css_class(self, css_class):
+        super().remove_css_class(css_class)
+        self.queue_draw()
+
+    def on_draw(self, drawing_area, cr, width, height):
+        if width <= 0 or height <= 0 or self.total_segments <= 0:
+            return
+            
+        radius = min(14, height / 2, width / 2)
+        
+        context = self.get_style_context()
+        if self.has_css_class("short-break-state") or self.has_css_class("long-break-state"):
+            success, col = context.lookup_color("success_color")
+            if not success: col = Gdk.RGBA(0.18, 0.76, 0.49, 1.0)
+        else:
+            success, col = context.lookup_color("accent_bg_color")
+            if not success: col = Gdk.RGBA(0.2, 0.5, 0.9, 1.0)
+        active_rgba = (col.red, col.green, col.blue, 1.0)
+        
+        success, fg = context.lookup_color("theme_fg_color")
+        is_dark = (fg.red > 0.6) if success else True
+        if is_dark:
+            trough_rgba = (1.0, 1.0, 1.0, 0.12)
+        else:
+            trough_rgba = (0.0, 0.0, 0.0, 0.08)
+            
+        root = self.get_root()
+        is_submerge = root and root.has_css_class("submerge-theme")
+        if is_submerge:
+            if is_dark:
+                sep_rgba = (0.031, 0.129, 0.243, 1.0)
+            else:
+                sep_rgba = (0.800, 0.894, 0.969, 1.0)
+        else:
+            success, bg = context.lookup_color("window_bg_color")
+            if success:
+                sep_rgba = (bg.red, bg.green, bg.blue, 1.0)
+            else:
+                sep_rgba = (0.14, 0.14, 0.14, 1.0) if is_dark else (0.98, 0.98, 0.98, 1.0)
+            
+        def draw_rounded_rect(cx, cy, cw, ch, rad):
+            cr.new_path()
+            cr.arc(cx + rad, cy + rad, rad, math.pi, 3 * math.pi / 2)
+            cr.arc(cx + cw - rad, cy + rad, rad, 3 * math.pi / 2, 2 * math.pi)
+            cr.arc(cx + cw - rad, cy + ch - rad, rad, 0, math.pi / 2)
+            cr.arc(cx + rad, cy + ch - rad, rad, math.pi / 2, math.pi)
+            cr.close_path()
+            
+        # 1. Draw Background Trough
+        cr.set_source_rgba(*trough_rgba)
+        draw_rounded_rect(0, 0, width, height, radius)
+        cr.fill()
+        
+        # 2. Draw Continuous Active Fill
+        if self.fraction > 0:
+            cr.save()
+            draw_rounded_rect(0, 0, width, height, radius)
+            cr.clip()
+            
+            cr.set_source_rgba(*active_rgba)
+            cr.rectangle(0, 0, width * self.fraction, height)
+            cr.fill()
+            cr.restore()
+            
+        # 3. Draw Engraved Separators
+        if self.total_segments > 1:
+            for idx in range(1, self.total_segments):
+                x = (width * idx) / self.total_segments
+                cr.set_source_rgba(*sep_rgba)
+                cr.rectangle(x - 1.25, 0, 2.5, height)
+                cr.fill()
 
 
 class BreakOverlayWindow(Gtk.Window):
@@ -427,7 +528,7 @@ class PlumbWindow(Adw.ApplicationWindow):
 
         progress_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=24)
 
-        self.progress_bar = Gtk.ProgressBar()
+        self.progress_bar = SegmentedProgressBar(4)
         self.progress_bar.set_fraction(0.0)
         self.progress_bar.set_hexpand(True)
         self.progress_bar.add_css_class("focus-state")
@@ -720,6 +821,9 @@ class PlumbWindow(Adw.ApplicationWindow):
                 
         if hasattr(self, 'compact_window') and self.compact_window.get_visible():
             self.compact_window.update_display()
+
+        if hasattr(self.progress_bar, "set_cycle_info"):
+            self.progress_bar.set_cycle_info(current_cycle, self.timer.cycles)
 
         if total_time > 0:
             self.progress_bar.set_fraction(elapsed_time / total_time)
