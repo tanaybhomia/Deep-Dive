@@ -190,24 +190,32 @@ window:not(.dark-theme).submerge-theme toast button.text-button, window:not(.dar
 window:not(.dark-theme).submerge-theme toast button.text-button, window:not(.dark-theme).submerge-theme toast button.circular { background-color: rgba(255, 255, 255, 0.1); }
 window:not(.dark-theme).submerge-theme toast button.text-button:hover, window:not(.dark-theme).submerge-theme toast button.circular:hover { background-color: rgba(255, 255, 255, 0.2); }
 
-/* Softened Stats Compartment Shadows */
+/* GNOME Settings (AdwBoxedList) Inspired Stats Cards */
 .stats-card {
-    box-shadow: none !important;
-    border: 1px solid rgba(128, 128, 128, 0.15);
+    background-color: @card_bg_color;
+    border: 1px solid rgba(0, 0, 0, 0.06);
     border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+}
+
+window.dark-theme .stats-card {
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: none !important;
 }
 
 /* Submerge Theme - Card Surfaces (Dark & Light) */
 window.dark-theme.submerge-theme .card,
 window.dark-theme.submerge-theme .stats-card {
     background-color: #08213e;
-    border-color: rgba(0, 229, 255, 0.15);
+    border-color: rgba(0, 229, 255, 0.12);
+    box-shadow: none !important;
 }
 
 window:not(.dark-theme).submerge-theme .card,
 window:not(.dark-theme).submerge-theme .stats-card {
     background-color: #cce4f7;
-    border-color: rgba(2, 119, 189, 0.15);
+    border-color: rgba(2, 119, 189, 0.12);
+    box-shadow: 0 1px 3px rgba(2, 55, 89, 0.04), 0 1px 2px rgba(2, 55, 89, 0.02) !important;
 }
 
 
