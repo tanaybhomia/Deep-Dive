@@ -153,8 +153,8 @@ window.dark-theme.submerge-theme button.play-circular { background-color: rgba(0
 window.dark-theme.submerge-theme button.play-circular:hover { background-color: rgba(0, 229, 255, 0.30); }
 window.dark-theme.submerge-theme button.compact-btn:hover { background-color: rgba(0, 229, 255, 0.30); }
 
-window.dark-theme.submerge-theme { background-color: #041221; color: white; }
-window.dark-theme.submerge-theme label, window.dark-theme.submerge-theme image, window.dark-theme.submerge-theme .title-1, window.dark-theme.submerge-theme .title-4, window.dark-theme.submerge-theme .cycle-indicator { color: white; }
+window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme { background-color: #041221; color: white; }
+window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme label:not(tooltip label):not(.tooltip label):not(popover label), window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme headerbar label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme stack label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme scrolledwindow label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .card label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .stats-card label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme button label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme dropdown label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme image, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-1, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-2, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-3, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-4, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .huge-timer, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .cycle-indicator, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .dim-label, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .numeric, window.dark-theme:not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .caption { color: white; }
 window.dark-theme.submerge-theme popover > contents { background-color: #08213e; color: white; }
 window.dark-theme.submerge-theme popover > contents label { color: white; }
 window.dark-theme.submerge-theme popover > contents listview row:selected, window.dark-theme.submerge-theme popover > contents listview row:hover { background-color: rgba(0, 229, 255, 0.15); }
@@ -169,11 +169,11 @@ window:not(.dark-theme).submerge-theme button.play-circular { background-color: 
 window:not(.dark-theme).submerge-theme button.play-circular:hover { background-color: rgba(2, 119, 189, 0.30); }
 window:not(.dark-theme).submerge-theme button.compact-btn:hover { background-color: rgba(2, 119, 189, 0.30); }
 
-window:not(.dark-theme).submerge-theme { background-color: #e3f2fd; color: #023759; }
-window:not(.dark-theme).submerge-theme label, window:not(.dark-theme).submerge-theme image, window:not(.dark-theme).submerge-theme .title-1, window:not(.dark-theme).submerge-theme .title-4, window:not(.dark-theme).submerge-theme .cycle-indicator { color: #023759; }
-window:not(.dark-theme).submerge-theme popover > contents { background-color: #ffffff; color: #023759; }
-window:not(.dark-theme).submerge-theme popover > contents label { color: #023759; }
-window:not(.dark-theme).submerge-theme popover > contents listview row:selected, window:not(.dark-theme).submerge-theme popover > contents listview row:hover { background-color: rgba(2, 119, 189, 0.15); }
+window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme { background-color: #e3f2fd; color: #023759; }
+window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme headerbar label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme stack label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme scrolledwindow label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .card label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .stats-card label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme button label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme dropdown label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme image, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-1, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-2, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-3, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .title-4, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .huge-timer, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .cycle-indicator, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .dim-label, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .numeric, window:not(.dark-theme):not(.tooltip):not(.popup):not(.hint):not(.tooltip-window).submerge-theme .caption { color: #023759; }
+window:not(.dark-theme).submerge-theme popover:not(.tooltip) > contents:not(.tooltip) { background-color: #ffffff; color: #023759; }
+window:not(.dark-theme).submerge-theme popover:not(.tooltip) > contents:not(.tooltip) label { color: #023759; }
+window:not(.dark-theme).submerge-theme popover:not(.tooltip) > contents:not(.tooltip) listview row:selected, window:not(.dark-theme).submerge-theme popover:not(.tooltip) > contents:not(.tooltip) listview row:hover { background-color: rgba(2, 119, 189, 0.15); }
 window:not(.dark-theme).submerge-theme.compact-window { background-color: #cce4f7; }
 
 /* Submerge Theme - Toasts (Dark Mode) */
@@ -217,5 +217,86 @@ window:not(.dark-theme).submerge-theme .stats-card {
     border-color: rgba(2, 119, 189, 0.12);
     box-shadow: 0 1px 3px rgba(2, 55, 89, 0.04), 0 1px 2px rgba(2, 55, 89, 0.02) !important;
 }
+/* Unbeatable Universal Tooltip Contrast Override for ALL themes, modes, and popovers */
+tooltip,
+.tooltip,
+popover.tooltip,
+.popup,
+.hint,
+.tooltip-window,
+window.submerge-theme tooltip,
+window.submerge-theme .tooltip,
+window.submerge-theme popover.tooltip,
+window.submerge-theme:not(.dark-theme) tooltip,
+window.submerge-theme:not(.dark-theme) .tooltip,
+window.submerge-theme:not(.dark-theme) popover.tooltip,
+window.submerge-theme:not(.dark-theme) .popup,
+window.submerge-theme:not(.dark-theme) .hint {
+    background-color: #262626 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 6px 10px !important;
+}
 
-
+tooltip *,
+.tooltip *,
+popover.tooltip *,
+popover .tooltip *,
+popover tooltip *,
+.popup *,
+.hint *,
+.tooltip-window *,
+tooltip label,
+.tooltip label,
+popover.tooltip label,
+popover .tooltip label,
+popover tooltip label,
+.popup label,
+.hint label,
+.tooltip-window label,
+tooltip image,
+.tooltip image,
+popover.tooltip image,
+.popup image,
+.hint image,
+window.submerge-theme tooltip *,
+window.submerge-theme .tooltip *,
+window.submerge-theme popover.tooltip *,
+window.submerge-theme .popup *,
+window.submerge-theme .hint *,
+window.submerge-theme tooltip label,
+window.submerge-theme .tooltip label,
+window.submerge-theme popover.tooltip label,
+window.submerge-theme popover .tooltip label,
+window.submerge-theme popover tooltip label,
+window.submerge-theme .popup label,
+window.submerge-theme .hint label,
+window.submerge-theme:not(.dark-theme) tooltip *,
+window.submerge-theme:not(.dark-theme) .tooltip *,
+window.submerge-theme:not(.dark-theme) popover.tooltip *,
+window.submerge-theme:not(.dark-theme) .popup *,
+window.submerge-theme:not(.dark-theme) .hint *,
+window.submerge-theme:not(.dark-theme) tooltip label,
+window.submerge-theme:not(.dark-theme) .tooltip label,
+window.submerge-theme:not(.dark-theme) popover.tooltip label,
+window.submerge-theme:not(.dark-theme) popover .tooltip label,
+window.submerge-theme:not(.dark-theme) popover tooltip label,
+window.submerge-theme:not(.dark-theme) .popup label,
+window.submerge-theme:not(.dark-theme) .hint label,
+window.submerge-theme:not(.dark-theme) popover > contents.tooltip label,
+window.submerge-theme:not(.dark-theme) popover > contents .tooltip label,
+window.submerge-theme:not(.dark-theme) popover > contents tooltip label,
+window.submerge-theme:not(.dark-theme) tooltip image,
+window.submerge-theme:not(.dark-theme) .tooltip image,
+window.submerge-theme:not(.dark-theme):not(.no-transition) tooltip label,
+window.submerge-theme:not(.dark-theme):not(.no-transition) .tooltip label,
+window.submerge-theme:not(.dark-theme):not(.no-transition) .popup label,
+window.submerge-theme:not(.dark-theme):not(.no-transition) .hint label,
+tooltip.submerge-theme label,
+.tooltip.submerge-theme label,
+.popup.submerge-theme label,
+.hint.submerge-theme label {
+    background-color: transparent !important;
+    color: #ffffff !important;
+}
