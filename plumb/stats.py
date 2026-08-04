@@ -152,8 +152,14 @@ class GraphWidget(Gtk.DrawingArea):
             avg_val_minutes = sum(active_vals) / len(active_vals)
             avg_y = height - margin_bottom - (avg_val_minutes / max_minutes) * graph_height
             if margin_top <= avg_y <= (height - margin_bottom - 10):
+                context = self.get_style_context()
+                success, fg_rgba = context.lookup_color("theme_fg_color")
+                is_dark = success and (fg_rgba.red > 0.5 and fg_rgba.green > 0.5)
+                line_rgba = (0.9, 0.9, 0.95, 0.75) if is_dark else (0.15, 0.20, 0.25, 0.75)
+                text_rgba = (0.95, 0.95, 1.0, 0.95) if is_dark else (0.15, 0.20, 0.25, 0.95)
+
                 cr.save()
-                cr.set_source_rgba(r, g, b, 0.75)
+                cr.set_source_rgba(*line_rgba)
                 cr.set_line_width(1.5)
                 cr.set_dash([5, 4], 0)
                 cr.move_to(margin_left, avg_y)
@@ -161,12 +167,26 @@ class GraphWidget(Gtk.DrawingArea):
                 cr.stroke()
                 cr.restore()
                 
-                cr.set_source_rgba(r, g, b, 0.9)
+                # Format average text value
+                rounded_avg = int(round(avg_val_minutes))
+                if rounded_avg < 60:
+                    avg_text = f"Avg {rounded_avg}m"
+                else:
+                    h = rounded_avg // 60
+                    m = rounded_avg % 60
+                    avg_text = f"Avg {h}h {m}m" if m > 0 else f"Avg {h}h"
+                
                 layout = PangoCairo.create_layout(cr)
-                layout.set_text("Avg", -1)
+                layout.set_text(avg_text, -1)
                 layout.set_font_description(Pango.FontDescription.from_string("Sans Bold 9"))
                 _, extents = layout.get_pixel_extents()
-                cr.move_to(width - margin_right - extents.width - 2, avg_y - extents.height - 3)
+                
+                tx = width - margin_right - extents.width - 4
+                ty = avg_y - extents.height - 4
+                
+                # Display average numeric label directly above the dashed line with clean, high-contrast typography
+                cr.set_source_rgba(*text_rgba)
+                cr.move_to(tx, ty)
                 PangoCairo.show_layout(cr, layout)
                 
         cr.set_source_rgba(0.5, 0.5, 0.5, 0.6)
