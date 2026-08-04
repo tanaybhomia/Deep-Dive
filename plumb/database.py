@@ -393,5 +393,121 @@ class Database:
             
         return earliest_dt
 
+    def get_graph_tooltips(self, time_range="day", project_id=None, ref_date=None):
+        if ref_date is None:
+            ref_date = datetime.now()
+        date_str = ref_date.strftime("%Y-%m-%d")
+        buckets = {}
+        
+        with sqlite3.connect(self.db_path) as conn:
+            conditions = ["s.type = 'Focus'"]
+            params = []
+            if project_id is not None:
+                conditions.append("s.project_id = ?")
+                params.append(project_id)
+                
+            if time_range == "day":
+                prev_date_str = (ref_date - timedelta(days=1)).strftime("%Y-%m-%d")
+                next_date_str = (ref_date + timedelta(days=1)).strftime("%Y-%m-%d")
+                conditions.append("date(s.timestamp, 'localtime') >= ? AND date(s.timestamp, 'localtime') <= ?")
+                params.extend([prev_date_str, next_date_str])
+                query = f"""
+                    SELECT s.id, datetime(s.timestamp, 'localtime'), s.duration_seconds, p.name
+                    FROM sessions s
+                    LEFT JOIN projects p ON s.project_id = p.id
+                    WHERE {" AND ".join(conditions)}
+                """
+                cursor = conn.execute(query, params)
+                for row in cursor.fetchall():
+                    try:
+                        end_dt = datetime.fromisoformat(str(row[1]).replace(" ", "T"))
+                    except Exception:
+                        continue
+                    dur_sec = float(row[2] or 0)
+                    if dur_sec <= 0:
+                        continue
+                    p_name = row[3] or "General"
+                    start_dt = end_dt - timedelta(seconds=dur_sec)
+                    curr = start_dt
+                    while curr < end_dt:
+                        next_hour = (curr.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1))
+                        chunk_end = min(end_dt, next_hour)
+                        chunk_dur = (chunk_end - curr).total_seconds()
+                        if curr.strftime("%Y-%m-%d") == date_str and chunk_dur > 0:
+                            hr_key = curr.strftime("%H")
+                            if hr_key not in buckets:
+                                buckets[hr_key] = {"total": 0.0, "sessions": set(), "projects": {}}
+                            buckets[hr_key]["total"] += chunk_dur
+                            buckets[hr_key]["sessions"].add(row[0])
+                            buckets[hr_key]["projects"][p_name] = buckets[hr_key]["projects"].get(p_name, 0.0) + chunk_dur
+                        curr = chunk_end
+            else:
+                if time_range == "week":
+                    start_of_week = ref_date - timedelta(days=ref_date.weekday())
+                    end_of_week = start_of_week + timedelta(days=6)
+                    conditions.append("date(s.timestamp, 'localtime') >= ? AND date(s.timestamp, 'localtime') <= ?")
+                    params.extend([start_of_week.strftime("%Y-%m-%d"), end_of_week.strftime("%Y-%m-%d")])
+                    sel_key = "strftime('%w', s.timestamp, 'localtime')"
+                elif time_range == "month":
+                    start_of_month = ref_date.replace(day=1)
+                    next_month = (start_of_month + timedelta(days=32)).replace(day=1)
+                    end_of_month = next_month - timedelta(days=1)
+                    conditions.append("date(s.timestamp, 'localtime') >= ? AND date(s.timestamp, 'localtime') <= ?")
+                    params.extend([start_of_month.strftime("%Y-%m-%d"), end_of_month.strftime("%Y-%m-%d")])
+                    sel_key = "strftime('%d', s.timestamp, 'localtime')"
+                else:
+                    sel_key = "strftime('%Y-%m', s.timestamp, 'localtime')"
+                    
+                query = f"""
+                    SELECT s.id, {sel_key}, s.duration_seconds, p.name
+                    FROM sessions s
+                    LEFT JOIN projects p ON s.project_id = p.id
+                    WHERE {" AND ".join(conditions)}
+                """
+                cursor = conn.execute(query, params)
+                for row in cursor.fetchall():
+                    key = str(row[1])
+                    if time_range == "week":
+                        key = str((int(key) - 1) % 7)
+                    dur_sec = float(row[2] or 0)
+                    if dur_sec <= 0:
+                        continue
+                    p_name = row[3] or "General"
+                    if key not in buckets:
+                        buckets[key] = {"total": 0.0, "sessions": set(), "projects": {}}
+                    buckets[key]["total"] += dur_sec
+                    buckets[key]["sessions"].add(row[0])
+                    buckets[key]["projects"][p_name] = buckets[key]["projects"].get(p_name, 0.0) + dur_sec
+                    
+        result = {}
+        for key, b in buckets.items():
+            tot_min = int(round(b["total"] / 60.0))
+            if time_range == "day":
+                tot_min = min(60, tot_min)
+                
+            time_str = "<1m" if tot_min == 0 else (f"{tot_min}m" if tot_min < 60 else f"{tot_min//60}h {tot_min%60}m" if tot_min%60 > 0 else f"{tot_min//60}h")
+            
+            sorted_projs = sorted(b["projects"].items(), key=lambda x: x[1], reverse=True)
+            proj_names = [p[0] for p in sorted_projs if p[1] > 0]
+            if not proj_names and sorted_projs:
+                proj_names = [sorted_projs[0][0]]
+                
+            def truncate_name(name, max_len=22):
+                return (name[:max_len-1] + "…") if len(name) > max_len else name
+
+            if len(proj_names) == 0:
+                proj_lines = ["General"]
+            elif len(proj_names) == 1:
+                proj_lines = [truncate_name(proj_names[0])]
+            elif len(proj_names) == 2:
+                proj_lines = [f"• {truncate_name(proj_names[0])}", f"• {truncate_name(proj_names[1])}"]
+            else:
+                proj_lines = [f"• {truncate_name(proj_names[0])}", f"• {truncate_name(proj_names[1])}", f"• +{len(proj_names)-2} more"]
+                
+            result[key] = "\n".join([f"{time_str} focused"] + proj_lines)
+            
+        return result
+
 
 db = Database()
+

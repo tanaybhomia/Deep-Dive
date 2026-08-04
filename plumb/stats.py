@@ -15,14 +15,54 @@ class GraphWidget(Gtk.DrawingArea):
         self.set_size_request(-1, 260)
         self.set_draw_func(self.on_draw)
         self.graph_data = {}
+        self.tooltip_data = {}
         self.time_range = "day"
         self.accent_color = (0, 0, 0, 1)
+        self.hovered_key = None
+        self.column_bounds = {}
         
-    def set_data(self, data, time_range, ref_date=None):
+        self.set_has_tooltip(True)
+        self.connect("query-tooltip", self.on_query_tooltip)
+        
+        motion = Gtk.EventControllerMotion()
+        motion.connect("motion", self.on_motion)
+        motion.connect("leave", self.on_leave)
+        self.add_controller(motion)
+        
+    def set_data(self, data, time_range, ref_date=None, tooltip_data=None):
         self.graph_data = data
+        self.tooltip_data = tooltip_data or {}
         self.time_range = time_range
         self.ref_date = ref_date or datetime.now()
         self.queue_draw()
+
+    def on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
+        if keyboard_mode or not self.column_bounds:
+            return False
+            
+        for key, (cx_start, cx_end) in self.column_bounds.items():
+            if cx_start <= x <= cx_end:
+                text = self.tooltip_data.get(key)
+                if text:
+                    tooltip.set_text(text)
+                    return True
+        return False
+
+    def on_motion(self, controller, x, y):
+        new_hovered = None
+        if self.column_bounds:
+            for key, (cx_start, cx_end) in self.column_bounds.items():
+                if cx_start <= x <= cx_end and self.graph_data.get(key, 0) > 0:
+                    new_hovered = key
+                    break
+        if new_hovered != self.hovered_key:
+            self.hovered_key = new_hovered
+            self.queue_draw()
+
+    def on_leave(self, controller):
+        if self.hovered_key is not None:
+            self.hovered_key = None
+            self.queue_draw()
 
     def get_accent_rgba(self):
         context = self.get_style_context()
@@ -124,19 +164,26 @@ class GraphWidget(Gtk.DrawingArea):
         bar_width = min(40, (graph_width / len(keys)) * 0.8)
         bar_spacing = (graph_width - (bar_width * len(keys))) / max(1, (len(keys) - 1))
         
-        cr.set_source_rgba(r, g, b, 0.8)
+        self.column_bounds = {}
         for i, key in enumerate(keys):
             val_seconds = self.graph_data.get(key, 0)
             val_minutes = val_seconds / 60
+            
+            x = margin_left + i * (bar_width + bar_spacing)
+            col_start = x - (bar_spacing / 2 if i > 0 else 5)
+            col_end = x + bar_width + (bar_spacing / 2 if i < len(keys) - 1 else 5)
+            self.column_bounds[key] = (col_start, col_end)
             
             bar_h = (val_minutes / max_minutes) * graph_height if max_minutes > 0 else 0
             if bar_h > graph_height: bar_h = graph_height
             
             if bar_h > 0:
-                x = margin_left + i * (bar_width + bar_spacing)
                 y = height - margin_bottom - bar_h
                 
-                cr.set_source_rgba(r, g, b, 0.85)
+                if key == getattr(self, "hovered_key", None):
+                    cr.set_source_rgba(r, g, b, 1.0)
+                else:
+                    cr.set_source_rgba(r, g, b, 0.85)
                 
                 cr.new_path()
                 radius = min(4, bar_width / 2)
@@ -626,7 +673,8 @@ class StatsPage(Gtk.Box):
         self.breaks_lbl.set_label(self._format_time(stats["total_break_seconds"]))
             
         graph_data = db.get_graph_data(tr, self.current_project_id, self.current_date)
-        self.graph.set_data(graph_data, tr, self.current_date)
+        tooltip_data = db.get_graph_tooltips(tr, self.current_project_id, self.current_date)
+        self.graph.set_data(graph_data, tr, self.current_date, tooltip_data)
         
         insights = db.get_insights(tr, self.current_project_id, self.current_date)
         
