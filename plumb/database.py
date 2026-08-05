@@ -80,6 +80,10 @@ class Database:
             """,
                 (project_id, session_type, duration_seconds),
             )
+    def has_sessions(self):
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.execute("SELECT 1 FROM sessions LIMIT 1")
+            return cursor.fetchone() is not None
 
     def get_setting(self, key, default=None):
         with sqlite3.connect(self.db_path) as conn:

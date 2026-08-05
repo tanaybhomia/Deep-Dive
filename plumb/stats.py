@@ -280,12 +280,25 @@ class StatsPage(Gtk.Box):
         self.current_time_range = "day"
         self.current_date = datetime.now()
 
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.stack.set_halign(Gtk.Align.FILL)
+        self.stack.set_hexpand(True)
+        self.stack.set_vexpand(True)
+        self.append(self.stack)
+
+        self.empty_status = Adw.StatusPage()
+        self.empty_status.set_icon_name("graph-symbolic")
+        self.empty_status.set_title("No Statistics Yet")
+        self.empty_status.set_description("Dive into a focus or timer session to start tracking your activity.")
+        self.stack.add_named(self.empty_status, "empty")
+
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_halign(Gtk.Align.FILL)
         scrolled.set_hexpand(True)
         scrolled.set_vexpand(True)
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        self.append(scrolled)
+        self.stack.add_named(scrolled, "stats")
 
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=32)
         self.main_box.set_halign(Gtk.Align.FILL)
@@ -666,6 +679,11 @@ class StatsPage(Gtk.Box):
         return f"{minutes}m"
 
     def update_stats(self):
+        if not db.has_sessions():
+            self.stack.set_visible_child_name("empty")
+            return
+
+        self.stack.set_visible_child_name("stats")
         tr = self.current_time_range
         stats = db.get_total_stats(tr, self.current_project_id, self.current_date)
         
