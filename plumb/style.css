@@ -68,10 +68,13 @@ button.action-pill:hover {
 button.play-circular {
     min-width: 64px;
     min-height: 64px;
-    border-radius: 32px;
+    width: 64px;
+    height: 64px;
+    padding: 0;
+    border-radius: 9999px;
     background-color: @accent_bg_color;
     color: @accent_fg_color;
-    transition: background-color 0.3s ease, transform 0.1s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 button.play-circular:hover {
