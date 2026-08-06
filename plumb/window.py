@@ -498,6 +498,7 @@ class PlumbWindow(Adw.ApplicationWindow):
     def _build_pomodoro_page(self):
         page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=48)
         page_box.set_valign(Gtk.Align.CENTER)
+        page_box.set_halign(Gtk.Align.CENTER)
         page_box.set_margin_start(32)
         page_box.set_margin_end(32)
         page_box.set_margin_top(32)
@@ -579,6 +580,7 @@ class PlumbWindow(Adw.ApplicationWindow):
     def _build_timer_page(self):
         page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=48)
         page_box.set_valign(Gtk.Align.CENTER)
+        page_box.set_halign(Gtk.Align.CENTER)
         page_box.set_margin_start(32)
         page_box.set_margin_end(32)
         page_box.set_margin_top(32)
