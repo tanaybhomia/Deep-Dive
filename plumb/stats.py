@@ -337,14 +337,14 @@ class StatsPage(Gtk.Box):
         controls_box.set_hexpand(True)
         
         self.cal_btn = Gtk.MenuButton()
-        self.cal_btn.set_size_request(150, -1)
+        self.cal_btn.set_size_request(135, -1)
         date_btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.date_lbl = Gtk.Label(label="Day")
         self.date_lbl.set_halign(Gtk.Align.START)
         self.date_lbl.set_hexpand(True)
         self.date_lbl.set_ellipsize(Pango.EllipsizeMode.END)
-        self.date_lbl.set_width_chars(12)
-        self.date_lbl.set_max_width_chars(12)
+        self.date_lbl.set_width_chars(3)
+        self.date_lbl.set_max_width_chars(10)
         self.date_lbl.set_lines(1)
         date_btn_box.append(self.date_lbl)
         date_btn_box.append(Gtk.Image.new_from_icon_name("x-office-calendar-symbolic"))
@@ -376,15 +376,15 @@ class StatsPage(Gtk.Box):
         
         self.project_model = Gtk.StringList.new(["All Projects"])
         self.project_dropdown = Gtk.DropDown(model=self.project_model)
-        self.project_dropdown.set_size_request(150, -1)
+        self.project_dropdown.set_size_request(135, -1)
         
         def setup_dropdown_cb(factory, item):
             lbl = Gtk.Label()
             lbl.set_halign(Gtk.Align.START)
             lbl.set_hexpand(True)
             lbl.set_ellipsize(Pango.EllipsizeMode.END)
-            lbl.set_width_chars(12)
-            lbl.set_max_width_chars(12)
+            lbl.set_width_chars(3)
+            lbl.set_max_width_chars(10)
             item.set_child(lbl)
             
         def bind_dropdown_cb(factory, item):

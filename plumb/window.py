@@ -181,8 +181,8 @@ class PlumbWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.set_title("Plumb")
-        self.set_default_size(460, 640)
-        self.set_size_request(460, 640)
+        self.set_default_size(435, 640)
+        self.set_size_request(435, 640)
         self.set_resizable(False)
 
         self.timer = TimerLogic()
@@ -198,7 +198,7 @@ class PlumbWindow(Adw.ApplicationWindow):
         self.stopwatch.on_tick_callback = self._on_stopwatch_tick
 
         self.toolbar_view = Adw.ToolbarView()
-        self.toolbar_view.set_size_request(460, 640)
+        self.toolbar_view.set_size_request(435, 640)
         self.toast_overlay = Adw.ToastOverlay()
         self.set_content(self.toolbar_view)
 
