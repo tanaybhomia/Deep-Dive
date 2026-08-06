@@ -182,8 +182,8 @@ class PlumbWindow(Adw.ApplicationWindow):
         super().__init__(**kwargs)
         self.set_title("Plumb")
         self.set_default_size(435, 640)
-        self.set_size_request(435, 640)
-        self.set_resizable(False)
+        self.set_size_request(360, 500)
+        # GNOME HIG compliant resizing enabled
 
         self.timer = TimerLogic()
         self.timer.on_tick_callback = self._on_timer_tick
@@ -223,10 +223,13 @@ class PlumbWindow(Adw.ApplicationWindow):
         style_manager.connect("notify::dark", self._on_dark_changed)
         self._on_dark_changed(style_manager, None)
 
-        self.carousel = Adw.Carousel()
-        self.carousel.set_spacing(24)
-        self.carousel.set_interactive(True)
-        self.toast_overlay.set_child(self.carousel)
+        self.view_stack = Adw.ViewStack()
+        
+        self.swipe_gesture = Gtk.GestureSwipe.new()
+        self.swipe_gesture.connect("swipe", self._on_swipe)
+        self.view_stack.add_controller(self.swipe_gesture)
+
+        self.toast_overlay.set_child(self.view_stack)
         self.toolbar_view.set_content(self.toast_overlay)
 
         self.key_ctrl = Gtk.EventControllerKey.new()
@@ -234,23 +237,10 @@ class PlumbWindow(Adw.ApplicationWindow):
         self.key_ctrl.connect("key-pressed", self._on_key_pressed)
         self.add_controller(self.key_ctrl)
 
-        self.view_stack = Adw.ViewStack()
-
-        self.view_stack.add_titled_with_icon(
-            Gtk.Box(), "pomodoro", "Pomodoro", "alarm-symbolic"
-        )
-        self.view_stack.add_titled_with_icon(
-            Gtk.Box(), "timer", "Timer", "document-open-recent-symbolic"
-        )
-        self.view_stack.add_titled_with_icon(
-            Gtk.Box(), "stats", "Stats", "graph-symbolic"
-        )
-
         self.switcher_bar = Adw.ViewSwitcherBar(stack=self.view_stack)
         self.switcher_bar.set_reveal(True)
         self.toolbar_view.add_bottom_bar(self.switcher_bar)
 
-        self.carousel.connect("page-changed", self._on_carousel_page_changed)
         self.view_stack.connect("notify::visible-child", self._on_view_stack_changed)
 
         self.menu_button = Gtk.MenuButton()
@@ -288,9 +278,13 @@ class PlumbWindow(Adw.ApplicationWindow):
         from plumb.stats import StatsPage
         self.stats_page = StatsPage(main_window=self)
 
-        self.carousel.append(self.pomodoro_page)
-        self.carousel.append(self.timer_page)
-        self.carousel.append(self.stats_page)
+        pomo_clamp = Adw.Clamp(maximum_size=500, child=self.pomodoro_page)
+        timer_clamp = Adw.Clamp(maximum_size=500, child=self.timer_page)
+        stats_clamp = Adw.Clamp(maximum_size=750, child=self.stats_page)
+
+        self.view_stack.add_titled_with_icon(pomo_clamp, "pomodoro", "Pomodoro", "alarm-symbolic")
+        self.view_stack.add_titled_with_icon(timer_clamp, "timer", "Timer", "document-open-recent-symbolic")
+        self.view_stack.add_titled_with_icon(stats_clamp, "stats", "Stats", "graph-symbolic")
 
         self._update_time_display()
         self._set_running_ui_state(False)
@@ -340,10 +334,18 @@ class PlumbWindow(Adw.ApplicationWindow):
             self.timer.pause()
             self._set_running_ui_state(False)
 
-    def _on_carousel_page_changed(self, carousel, index):
-        pages = ["pomodoro", "timer", "stats"]
-        if self.view_stack.get_visible_child_name() != pages[index]:
-            self.view_stack.set_visible_child_name(pages[index])
+    def _on_swipe(self, gesture, velocity_x, velocity_y):
+        if self.timer.is_running or (hasattr(self, 'stopwatch') and self.stopwatch.elapsed_seconds > 0):
+            return
+        if abs(velocity_x) > abs(velocity_y) and abs(velocity_x) > 200:
+            pages = ["pomodoro", "timer", "stats"]
+            current = self.view_stack.get_visible_child_name()
+            if current in pages:
+                idx = pages.index(current)
+                if velocity_x < 0 and idx < len(pages) - 1:
+                    self.view_stack.set_visible_child_name(pages[idx + 1])
+                elif velocity_x > 0 and idx > 0:
+                    self.view_stack.set_visible_child_name(pages[idx - 1])
 
     def _build_shortcuts_window(self):
         xml = """
@@ -489,19 +491,13 @@ class PlumbWindow(Adw.ApplicationWindow):
 
 
     def _on_view_stack_changed(self, stack, param):
-        pages = ["pomodoro", "timer", "stats"]
         name = stack.get_visible_child_name()
-        if name in pages:
-            index = pages.index(name)
-            target_widget = self.carousel.get_nth_page(index)
-            self.carousel.scroll_to(target_widget, True)
-            if name == "stats" and hasattr(self, 'stats_page'):
-                self.stats_page.update_stats()
+        if name == "stats" and hasattr(self, 'stats_page'):
+            self.stats_page.update_stats()
 
     def _build_pomodoro_page(self):
         page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=48)
         page_box.set_valign(Gtk.Align.CENTER)
-        page_box.set_halign(Gtk.Align.CENTER)
         page_box.set_margin_start(32)
         page_box.set_margin_end(32)
         page_box.set_margin_top(32)
@@ -583,7 +579,6 @@ class PlumbWindow(Adw.ApplicationWindow):
     def _build_timer_page(self):
         page_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=48)
         page_box.set_valign(Gtk.Align.CENTER)
-        page_box.set_halign(Gtk.Align.CENTER)
         page_box.set_margin_start(32)
         page_box.set_margin_end(32)
         page_box.set_margin_top(32)
@@ -639,7 +634,6 @@ class PlumbWindow(Adw.ApplicationWindow):
 
     def _set_running_ui_state(self, is_running):
         self.switcher_bar.set_sensitive(not is_running)
-        self.carousel.set_interactive(not is_running)
         
         is_active = is_running or self.timer.time_left < (self.timer.durations.get(self.timer.state, 0) * 60)
 
@@ -993,7 +987,6 @@ class PlumbWindow(Adw.ApplicationWindow):
 
     def _set_sw_running_ui_state(self, is_running):
         self.switcher_bar.set_sensitive(not is_running)
-        self.carousel.set_interactive(not is_running)
         
         is_active = is_running or self.stopwatch.elapsed_seconds > 0
 
