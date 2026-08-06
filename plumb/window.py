@@ -183,7 +183,6 @@ class PlumbWindow(Adw.ApplicationWindow):
         self.set_title("Plumb")
         self.set_default_size(435, 640)
         self.set_size_request(360, 500)
-        # GNOME HIG compliant resizing enabled
 
         self.timer = TimerLogic()
         self.timer.on_tick_callback = self._on_timer_tick
@@ -224,12 +223,18 @@ class PlumbWindow(Adw.ApplicationWindow):
         self._on_dark_changed(style_manager, None)
 
         self.view_stack = Adw.ViewStack()
+        self.view_stack.add_titled_with_icon(Gtk.Box(), "pomodoro", "Pomodoro", "alarm-symbolic")
+        self.view_stack.add_titled_with_icon(Gtk.Box(), "timer", "Timer", "document-open-recent-symbolic")
+        self.view_stack.add_titled_with_icon(Gtk.Box(), "stats", "Stats", "graph-symbolic")
+        
+        self.main_stack = Gtk.Stack()
+        self.main_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         
         self.swipe_gesture = Gtk.GestureSwipe.new()
         self.swipe_gesture.connect("swipe", self._on_swipe)
-        self.view_stack.add_controller(self.swipe_gesture)
+        self.main_stack.add_controller(self.swipe_gesture)
 
-        self.toast_overlay.set_child(self.view_stack)
+        self.toast_overlay.set_child(self.main_stack)
         self.toolbar_view.set_content(self.toast_overlay)
 
         self.key_ctrl = Gtk.EventControllerKey.new()
@@ -282,9 +287,9 @@ class PlumbWindow(Adw.ApplicationWindow):
         timer_clamp = Adw.Clamp(maximum_size=500, child=self.timer_page)
         stats_clamp = Adw.Clamp(maximum_size=750, child=self.stats_page)
 
-        self.view_stack.add_titled_with_icon(pomo_clamp, "pomodoro", "Pomodoro", "alarm-symbolic")
-        self.view_stack.add_titled_with_icon(timer_clamp, "timer", "Timer", "document-open-recent-symbolic")
-        self.view_stack.add_titled_with_icon(stats_clamp, "stats", "Stats", "graph-symbolic")
+        self.main_stack.add_named(pomo_clamp, "pomodoro")
+        self.main_stack.add_named(timer_clamp, "timer")
+        self.main_stack.add_named(stats_clamp, "stats")
 
         self._update_time_display()
         self._set_running_ui_state(False)
@@ -492,6 +497,8 @@ class PlumbWindow(Adw.ApplicationWindow):
 
     def _on_view_stack_changed(self, stack, param):
         name = stack.get_visible_child_name()
+        if hasattr(self, 'main_stack') and name:
+            self.main_stack.set_visible_child_name(name)
         if name == "stats" and hasattr(self, 'stats_page'):
             self.stats_page.update_stats()
 
