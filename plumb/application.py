@@ -146,14 +146,24 @@ class PlumbApplication(Adw.Application):
                     win.timer._set_gnome_dnd(False)
                     
                 if hasattr(win, "_unblock_websites"):
-                    win._unblock_websites()
+                    # Use a thread with timeout to prevent sudo from hanging the app
+                    import threading
+                    t = threading.Thread(target=win._unblock_websites)
+                    t.start()
+                    t.join(timeout=1.0)
                     
             self.quit()
         except Exception as e:
             print(f"Error during quit: {e}")
-        
-        import os
-        os._exit(0)
+            self.quit()
+            
+        # Absolute failsafe: if GTK or PyGObject fails to terminate the process after self.quit(), nuke it.
+        import os, threading
+        def _nuke():
+            import time
+            time.sleep(0.5)
+            os._exit(0)
+        threading.Thread(target=_nuke, daemon=True).start()
 
     def _attempt_quit(self, win):
         try:
@@ -180,9 +190,9 @@ class PlumbApplication(Adw.Application):
                 dialog.set_transient_for(active_win if active_win else win)
                 
                 dialog.add_response("cancel", "Cancel")
+                dialog.set_default_response("cancel")
                 
                 dialog.add_response("background", "Run in Background")
-                dialog.set_response_appearance("background", Adw.ResponseAppearance.SUGGESTED)
                 
                 if is_stopwatch_active and win.stopwatch.elapsed_seconds >= 300:
                     dialog.add_response("save_quit", "Save & Quit")

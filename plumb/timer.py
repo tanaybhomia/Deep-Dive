@@ -3,7 +3,6 @@ import gi
 gi.require_version("GLib", "2.0")
 gi.require_version("Gio", "2.0")
 from gi.repository import GLib, Gio
-import atexit
 from plumb.database import db
 
 
@@ -57,7 +56,6 @@ class TimerLogic:
         self._original_dnd_state = None
 
         self._timeout_id = None
-        atexit.register(self._cleanup_dnd)
 
     def _cleanup_dnd(self):
         if self.dnd_sync:
