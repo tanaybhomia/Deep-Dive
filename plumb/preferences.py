@@ -9,9 +9,10 @@ from plumb.database import db
 
 
 class PlumbPreferencesWindow(Adw.PreferencesWindow):
-    def __init__(self, timer=None, **kwargs):
+    def __init__(self, timer=None, stopwatch=None, **kwargs):
         super().__init__(**kwargs)
         self.timer = timer
+        self.stopwatch = stopwatch
         self.set_title("Preferences")
         self.set_default_size(600, 700)
 
@@ -350,12 +351,18 @@ class PlumbPreferencesWindow(Adw.PreferencesWindow):
             db.set_setting("notify_running_out", str(self.timer.notify_running_out))
 
     def _on_dnd_sync_changed(self, switch, param):
+        is_active = switch.get_active()
+        db.set_setting("dnd_sync", str(is_active))
+        
         if self.timer:
-            self.timer.dnd_sync = switch.get_active()
-            db.set_setting("dnd_sync", str(self.timer.dnd_sync))
-
+            self.timer.dnd_sync = is_active
             if self.timer.is_running and self.timer.state == TimerState.FOCUS:
-                self.timer._set_gnome_dnd(self.timer.dnd_sync)
+                self.timer._set_gnome_dnd(is_active)
+                
+        if self.stopwatch:
+            self.stopwatch.dnd_sync = is_active
+            if self.stopwatch.is_running:
+                self.stopwatch._set_gnome_dnd(is_active)
 
     def _on_overlay_changed(self, switch, param):
         if self.timer:

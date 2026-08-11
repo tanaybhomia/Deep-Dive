@@ -185,15 +185,21 @@ class StopwatchLogic:
         self.is_running = False
         self.on_tick_callback = None
         self._timeout_id = None
+        self.dnd_sync = db.get_setting("dnd_sync", "False") == "True"
+        self._original_dnd_state = None
 
     def start(self):
         if not self.is_running:
             self.is_running = True
+            if self.dnd_sync:
+                self._set_gnome_dnd(True)
             self._timeout_id = GLib.timeout_add(1000, self._on_tick)
 
     def pause(self):
         if self.is_running:
             self.is_running = False
+            if self.dnd_sync:
+                self._set_gnome_dnd(False)
             if self._timeout_id:
                 GLib.source_remove(self._timeout_id)
                 self._timeout_id = None
@@ -212,3 +218,18 @@ class StopwatchLogic:
         if self.on_tick_callback:
             self.on_tick_callback(self.elapsed_seconds)
         return GLib.SOURCE_CONTINUE
+
+    def _set_gnome_dnd(self, enable):
+        try:
+            settings = Gio.Settings.new("org.gnome.desktop.notifications")
+            if enable:
+                self._original_dnd_state = settings.get_boolean("show-banners")
+                if self._original_dnd_state:
+                    settings.set_boolean("show-banners", False)
+            else:
+                if self._original_dnd_state is not None:
+                    settings.set_boolean("show-banners", self._original_dnd_state)
+                    self._original_dnd_state = None
+            Gio.Settings.sync()
+        except Exception as e:
+            print("Failed to toggle DND:", e)

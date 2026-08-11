@@ -145,6 +145,9 @@ class PlumbApplication(Adw.Application):
                 if hasattr(win, "timer") and win.timer and getattr(win.timer, "dnd_sync", False):
                     win.timer._set_gnome_dnd(False)
                     
+                if hasattr(win, "stopwatch") and win.stopwatch and getattr(win.stopwatch, "dnd_sync", False):
+                    win.stopwatch._set_gnome_dnd(False)
+                    
                 if hasattr(win, "_unblock_websites"):
                     # Use a thread with timeout to prevent sudo from hanging the app
                     import threading
@@ -265,7 +268,11 @@ class PlumbApplication(Adw.Application):
         from plumb.preferences import PlumbPreferencesWindow
 
         win = self.props.active_window
-        prefs_win = PlumbPreferencesWindow(timer=win.timer, transient_for=win)
+        prefs_win = PlumbPreferencesWindow(
+            timer=win.timer if hasattr(win, "timer") else None,
+            stopwatch=win.stopwatch if hasattr(win, "stopwatch") else None,
+            transient_for=win
+        )
         prefs_win.present()
 
     def _on_about_action(self, action, param):
