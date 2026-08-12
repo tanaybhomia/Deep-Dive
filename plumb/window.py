@@ -92,18 +92,42 @@ class SegmentedProgressBar(Gtk.DrawingArea):
         cr.fill()
         
         # 2. Draw Continuous Active Fill
-        if self.fraction > 0:
+        is_break = self.has_css_class("short-break-state") or self.has_css_class("long-break-state")
+        
+        if self.fraction > 0 or (self.current_segment > 1 and not is_break):
             cr.save()
             draw_rounded_rect(0, 0, width, height, radius)
             cr.clip()
             
-            cr.set_source_rgba(*active_rgba)
-            cr.rectangle(0, 0, width * self.fraction, height)
-            cr.fill()
+            success, focus_col = context.lookup_color("accent_bg_color")
+            if not success: focus_col = Gdk.RGBA(0.2, 0.5, 0.9, 1.0)
+            focus_rgba = (focus_col.red, focus_col.green, focus_col.blue, 1.0)
+            
+            if is_break:
+                # Break mode: single unified bar representing the break duration
+                if self.fraction > 0:
+                    cr.set_source_rgba(*active_rgba)
+                    cr.rectangle(0, 0, width * self.fraction, height)
+                    cr.fill()
+            else:
+                # Focus mode: Fill previous segments completely in focus color
+                base_fraction = (self.current_segment - 1) / max(1, self.total_segments)
+                if base_fraction > 0:
+                    cr.set_source_rgba(*focus_rgba)
+                    cr.rectangle(0, 0, width * base_fraction, height)
+                    cr.fill()
+                
+                # Draw the current segment in active color
+                if self.fraction > 0:
+                    segment_fraction = self.fraction / max(1, self.total_segments)
+                    cr.set_source_rgba(*active_rgba)
+                    cr.rectangle(width * base_fraction, 0, width * segment_fraction, height)
+                    cr.fill()
+                
             cr.restore()
             
         # 3. Draw Engraved Separators
-        if self.total_segments > 1:
+        if self.total_segments > 1 and not is_break:
             for idx in range(1, self.total_segments):
                 x = (width * idx) / self.total_segments
                 cr.set_source_rgba(*sep_rgba)
