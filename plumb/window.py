@@ -548,6 +548,10 @@ class PlumbWindow(Adw.ApplicationWindow):
             
         self.project_dropdown_stack.add_named(self.project_dropdown, "dropdown")
         
+        self.active_project_label = Gtk.Label(label="Default Project")
+        self.active_project_label.add_css_class("title-4")
+        self.project_dropdown_stack.add_named(self.active_project_label, "active_project")
+        
         self.break_state_label = Gtk.Label(label="Short Break")
         self.break_state_label.add_css_class("title-4")
         self.project_dropdown_stack.add_named(self.break_state_label, "break_label")
@@ -617,14 +621,25 @@ class PlumbWindow(Adw.ApplicationWindow):
         page_box.set_margin_top(32)
         page_box.set_margin_bottom(32)
 
+        self.sw_project_dropdown_stack = Gtk.Stack()
+        self.sw_project_dropdown_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self.sw_project_dropdown_stack.set_halign(Gtk.Align.CENTER)
+        self.sw_project_dropdown_stack.set_hhomogeneous(False)
+
         self.sw_project_dropdown = Gtk.DropDown.new(model=self._project_list)
         self.sw_project_dropdown.connect("notify::selected", self._on_project_selected)
-        self.sw_project_dropdown.set_halign(Gtk.Align.CENTER)
-
+        
         popover = self.sw_project_dropdown.get_last_child()
         if popover:
             popover.set_halign(Gtk.Align.CENTER)
-        page_box.append(self.sw_project_dropdown)
+            
+        self.sw_project_dropdown_stack.add_named(self.sw_project_dropdown, "dropdown")
+        
+        self.sw_active_project_label = Gtk.Label(label="Default Project")
+        self.sw_active_project_label.add_css_class("title-4")
+        self.sw_project_dropdown_stack.add_named(self.sw_active_project_label, "active_project")
+        
+        page_box.append(self.sw_project_dropdown_stack)
 
         self.sw_time_label = Gtk.Label(label="00:00")
         self.sw_time_label.add_css_class("huge-timer")
@@ -670,17 +685,15 @@ class PlumbWindow(Adw.ApplicationWindow):
         
         is_active = is_running or self.timer.time_left < (self.timer.durations.get(self.timer.state, 0) * 60)
 
-        self.project_dropdown.set_sensitive(not is_active)
-        self.project_dropdown.set_show_arrow(not is_active)
-        
         if is_active:
-            self.project_dropdown.remove_css_class("pill")
-            self.project_dropdown.add_css_class("flat")
-            self.project_dropdown.add_css_class("title-4")
+            item = self._project_list.get_item(self.project_dropdown.get_selected())
+            if item:
+                self.active_project_label.set_label(item.get_string())
+            if self.timer.state == "Focus":
+                self.project_dropdown_stack.set_visible_child_name("active_project")
         else:
-            self.project_dropdown.remove_css_class("flat")
-            self.project_dropdown.remove_css_class("title-4")
-            self.project_dropdown.add_css_class("pill")
+            if self.timer.state == "Focus":
+                self.project_dropdown_stack.set_visible_child_name("dropdown")
 
         if is_running:
             self.btn_submerge.set_sensitive(False)
@@ -1026,17 +1039,13 @@ class PlumbWindow(Adw.ApplicationWindow):
         
         is_active = is_running or self.stopwatch.elapsed_seconds > 0
 
-        self.sw_project_dropdown.set_sensitive(not is_active)
-        self.sw_project_dropdown.set_show_arrow(not is_active)
-        
         if is_active:
-            self.sw_project_dropdown.remove_css_class("pill")
-            self.sw_project_dropdown.add_css_class("flat")
-            self.sw_project_dropdown.add_css_class("title-4")
+            item = self._project_list.get_item(self.sw_project_dropdown.get_selected())
+            if item:
+                self.sw_active_project_label.set_label(item.get_string())
+            self.sw_project_dropdown_stack.set_visible_child_name("active_project")
         else:
-            self.sw_project_dropdown.remove_css_class("flat")
-            self.sw_project_dropdown.remove_css_class("title-4")
-            self.sw_project_dropdown.add_css_class("pill")
+            self.sw_project_dropdown_stack.set_visible_child_name("dropdown")
 
         if is_running:
             self.btn_submerge.set_sensitive(False)
