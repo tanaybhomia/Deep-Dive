@@ -870,7 +870,10 @@ class PlumbWindow(Adw.ApplicationWindow):
             self.compact_window = CompactWindow(self.get_application(), self)
             
         self.compact_window.present()
-        self.compact_window.update_display()
+        try:
+            self.compact_window.update_display()
+        except Exception as e:
+            print(f"Ignored first-frame render exception in Mini Mode: {e}")
         self.set_visible(False)
 
     def _on_submerge_toggled(self, button):
