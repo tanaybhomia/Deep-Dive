@@ -100,7 +100,7 @@ class CompactWindow(Gtk.ApplicationWindow):
 
     def update_display(self):
         # Read state from main window
-        is_pomodoro_tab = self.main_window.carousel.get_position() < 0.5
+        is_pomodoro_tab = self.main_window.view_stack.get_visible_child_name() == "pomodoro"
         
         if is_pomodoro_tab:
             title = self.main_window.timer.state
@@ -182,7 +182,7 @@ class CompactWindow(Gtk.ApplicationWindow):
             self.btn_skip.set_icon_name("document-save-symbolic")
 
     def _on_play_pause_clicked(self, button):
-        is_pomodoro_tab = self.main_window.carousel.get_position() < 0.5
+        is_pomodoro_tab = self.main_window.view_stack.get_visible_child_name() == "pomodoro"
         if is_pomodoro_tab:
             self.main_window._on_play_pause_clicked(button)
         else:
@@ -190,7 +190,7 @@ class CompactWindow(Gtk.ApplicationWindow):
         self.update_display()
 
     def _on_restart_clicked(self, button):
-        is_pomodoro_tab = self.main_window.carousel.get_position() < 0.5
+        is_pomodoro_tab = self.main_window.view_stack.get_visible_child_name() == "pomodoro"
         if is_pomodoro_tab:
             self.main_window._on_restart_clicked(button)
         else:
@@ -198,7 +198,7 @@ class CompactWindow(Gtk.ApplicationWindow):
         self.update_display()
 
     def _on_skip_clicked(self, button):
-        is_pomodoro_tab = self.main_window.carousel.get_position() < 0.5
+        is_pomodoro_tab = self.main_window.view_stack.get_visible_child_name() == "pomodoro"
         if is_pomodoro_tab:
             self.main_window._on_break_clicked(button)
         else:
