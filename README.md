@@ -17,7 +17,7 @@ Under development and NOT ready yet.
   <a href="https://flathub.org/apps/io.github.tanaybhomia.Plumb"><img src="https://img.shields.io/flathub/downloads/io.github.tanaybhomia.Plumb?style=flat-square&logo=flathub&color=blue" alt="Flathub Downloads"></a>
   <br><br>
 
-  <img alt="Plumb Main Interface" src="docs/images/1-hero.png" width="800" style="max-width: 100%; height: auto;" />
+  <img alt="Plumb Main Interface" src="docs/images/1-hero.png" style="max-width: 100%; height: auto;" />
 </div>
 
 <br>
