@@ -716,9 +716,9 @@ class PlumbWindow(Adw.ApplicationWindow):
                 
                 self.break_btn.set_label("Skip")
                 self.break_btn.remove_css_class("destructive-action")
-                self.break_btn.set_sensitive(False)
+                self.break_btn.set_sensitive(self.timer.state != "Focus")
                 
-            self.restart_btn.set_sensitive(False)
+            self.restart_btn.set_sensitive(self.timer.state != "Focus")
 
             if (
                 self.timer.state in ["Short Break", "Long Break"]

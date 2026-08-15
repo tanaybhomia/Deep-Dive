@@ -132,9 +132,9 @@ class CompactWindow(Gtk.ApplicationWindow):
                     self.btn_skip.set_label("")
                     self.btn_skip.set_icon_name("media-skip-forward-symbolic")
                     self.btn_skip.remove_css_class("destructive-action")
-                    self.btn_skip.set_sensitive(False)
+                    self.btn_skip.set_sensitive(self.main_window.timer.state != "Focus")
                 
-                self.btn_restart.set_sensitive(False)
+                self.btn_restart.set_sensitive(self.main_window.timer.state != "Focus")
             else:
                 self.btn_play_pause.set_icon_name("media-playback-start-symbolic")
                 self.btn_play_pause.set_sensitive(True)
