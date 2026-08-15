@@ -1,31 +1,26 @@
 Under development and NOT ready yet.
 
 <div align="center">
-  
-  <img src="data/icons/io.github.tanaybhomia.Plumb.svg" alt="Plumb Icon" width="128" height="128" style="vertical-align: middle;"> 
+  <img src="data/icons/io.github.tanaybhomia.Plumb.svg" alt="Plumb Icon" width="128" height="128"> 
   <h1>Plumb</h1>
-  <p><b>A hyper-focused, beautifully designed Pomodoro timer for GNOME that enforces strict discipline.</b></p>
+  <p><strong>A hyper-focused, beautifully designed Pomodoro timer for GNOME that enforces strict discipline.</strong></p>
 
   <a href="https://flathub.org/apps/io.github.tanaybhomia.Plumb">
-    <img src="https://flathub.org/api/badge?svg&locale=en" alt="Download on Flathub" height="50">
-  </a>
-  <a href="https://ko-fi.com/tanaybhomia">
-    <img src="docs/images/support_me_on_kofi_badge_red.png" alt="Support me on Ko-fi" height="50">
+    <img src="https://flathub.org/api/badge?svg&locale=en" alt="Download on Flathub" height="56">
   </a>
   <br><br>
-  
+
   <a href="#"><img src="https://img.shields.io/badge/Platform-GNOME-4A86CF?style=flat-square" alt="Platform: GNOME"></a>
   <a href="#"><img src="https://img.shields.io/badge/GTK-4.0-white?style=flat-square&logo=gtk" alt="GTK4"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-GPLv3-blue?style=flat-square" alt="License: GPLv3"></a>
   <a href="https://github.com/tanaybhomia/Plumb/stargazers"><img src="https://img.shields.io/github/stars/tanaybhomia/Plumb?style=flat-square&logo=github&color=gold" alt="GitHub Stars"></a>
   <a href="https://flathub.org/apps/io.github.tanaybhomia.Plumb"><img src="https://img.shields.io/flathub/downloads/io.github.tanaybhomia.Plumb?style=flat-square&logo=flathub&color=blue" alt="Flathub Downloads"></a>
   <br><br>
+
+  <img alt="Plumb Main Interface" src="docs/images/1-hero.png" width="800" style="max-width: 100%; height: auto;" />
 </div>
 
-<div align="center">
-  <img alt="Plumb Main Interface" src="docs/images/1-hero.png" style="max-width: 100%; height: auto;" />
-</div>
-
+<br>
 
 Plumb is a focused productivity application built natively for the GNOME desktop environment using GTK4 and Libadwaita. It goes beyond standard Pomodoro timers by introducing strict mechanisms designed to prevent cheating and enforce true deep work.
 
@@ -87,4 +82,12 @@ Thank you to everyone who has starred the repository and supported the project!
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=tanaybhomia/Plumb&type=timeline&legend=top-left" />
    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=tanaybhomia/Plumb&type=timeline&legend=top-left" />
  </picture>
+</a>
+
+## Support
+
+If you find Plumb helpful and want to support its development, you can buy me a coffee!
+
+<a href="https://ko-fi.com/tanaybhomia">
+  <img src="docs/images/support_me_on_kofi_badge_red.png" alt="Support me on Ko-fi" height="40">
 </a>
