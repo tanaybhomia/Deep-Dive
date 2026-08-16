@@ -4,11 +4,11 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Adw
-from plumb.timer import TimerState
-from plumb.database import db
+from deepdive.timer import TimerState
+from deepdive.database import db
 
 
-class PlumbPreferencesWindow(Adw.PreferencesWindow):
+class DeepDivePreferencesWindow(Adw.PreferencesWindow):
     def __init__(self, timer=None, stopwatch=None, **kwargs):
         super().__init__(**kwargs)
         self.timer = timer
@@ -588,33 +588,49 @@ class PlumbPreferencesWindow(Adw.PreferencesWindow):
             self.add_toast(toast)
 
     def _on_enable_blocker_changed(self, switch, param):
-        if getattr(self, "_is_initializing", False):
+        if getattr(self, "_is_initializing", False) or getattr(self, "_is_reverting", False):
             return
         is_enabled = switch.get_active()
-        db.set_setting("web_blocker_enabled", str(is_enabled))
-        if is_enabled:
-            self._check_install_polkit()
         
+        if is_enabled:
+            if db.get_setting("polkit_installed", "False") != "True":
+                self._check_install_polkit(switch, is_normal=False)
+            else:
+                db.set_setting("web_blocker_enabled", "True")
+        else:
+            db.set_setting("web_blocker_enabled", "False")
+
     def _on_block_normal_changed(self, switch, param):
-        if getattr(self, "_is_initializing", False):
+        if getattr(self, "_is_initializing", False) or getattr(self, "_is_reverting", False):
             return
         is_enabled = switch.get_active()
-        db.set_setting("web_blocker_normal_mode", str(is_enabled))
+        
         if is_enabled:
-            self._check_install_polkit()
-            
-    def _check_install_polkit(self):
+            if db.get_setting("polkit_installed", "False") != "True":
+                self._check_install_polkit(switch, is_normal=True)
+            else:
+                db.set_setting("web_blocker_normal_mode", "True")
+        else:
+            db.set_setting("web_blocker_normal_mode", "False")
+
+    def _revert_switch(self, switch):
+        self._is_reverting = True
+        switch.set_active(False)
+        self._is_reverting = False
+
+    def _check_install_polkit(self, switch, is_normal):
         if db.get_setting("polkit_installed", "False") == "True":
             return
 
         if getattr(self, "_install_dialog_open", False):
+            self._revert_switch(switch)
             return
             
         self._install_dialog_open = True
 
         dialog = Adw.MessageDialog(
             heading="Install Web Blocker?",
-            body="To block websites seamlessly without asking for your password on every session, Plumb needs to install a one-time security rule.\n\nThis will require your password once to complete the setup.",
+            body="To block websites seamlessly without asking for your password on every session, Deep Dive needs to install a one-time security rule.\n\nThis will require your password once to complete the setup.",
         )
         dialog.set_transient_for(self.get_root())
         dialog.add_response("cancel", "Not Now")
@@ -637,16 +653,24 @@ class PlumbPreferencesWindow(Adw.PreferencesWindow):
                         if result.returncode == 0:
                             print("Installation successful!")
                             GLib.idle_add(lambda: db.set_setting("polkit_installed", "True"))
+                            if is_normal:
+                                GLib.idle_add(lambda: db.set_setting("web_blocker_normal_mode", "True"))
+                            else:
+                                GLib.idle_add(lambda: db.set_setting("web_blocker_enabled", "True"))
                             GLib.idle_add(lambda: pref_win._show_msg("Success", "Web Blocker rule fully installed!"))
                         else:
+                            GLib.idle_add(lambda: pref_win._revert_switch(switch))
                             err = result.stderr.strip() or result.stdout.strip() or "Unknown error"
                             print(f"Installation failed: {result.returncode} - {err}")
                             GLib.idle_add(lambda: pref_win._show_msg("Installation Failed", f"Error ({result.returncode}): {err}"))
                     except Exception as e:
                         print(f"Installation exception: {e}")
+                        GLib.idle_add(lambda: pref_win._revert_switch(switch))
                         GLib.idle_add(lambda: pref_win._show_msg("Exception", str(e)))
                         
                 threading.Thread(target=run_installation, args=(self,), daemon=True).start()
+            else:
+                self._revert_switch(switch)
         
         dialog.connect("response", on_response)
         dialog.present()

@@ -7,4 +7,4 @@ This Wiki serves as the central documentation hub for both users and developers.
 ## Quick Links
 - [How to Use Deep Dive](How-to-Use)
 - [Brand & Feature Guidelines](Branding)
-- [Official Website](https://tanaybhomia.github.io/Plumb/)
+- [Official Website](https://tanaybhomia.github.io/DeepDive/)

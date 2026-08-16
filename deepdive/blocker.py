@@ -3,8 +3,8 @@ import sys
 import os
 
 HOSTS_FILE = "/etc/hosts"
-BLOCK_MARKER_START = "# --- PLUMB SUBMERGE BLOCKER START ---"
-BLOCK_MARKER_END = "# --- PLUMB SUBMERGE BLOCKER END ---"
+BLOCK_MARKER_START = "# --- DEEP DIVE SUBMERGE BLOCKER START ---"
+BLOCK_MARKER_END = "# --- DEEP DIVE SUBMERGE BLOCKER END ---"
 
 def get_hosts_content():
     try:
@@ -17,7 +17,7 @@ def write_hosts_content(content):
     with open(HOSTS_FILE, 'w') as f:
         f.write(content)
 
-def remove_plumb_blocks(content):
+def remove_deepdive_blocks(content):
     lines = content.split('\n')
     new_lines = []
     in_block = False
@@ -38,7 +38,7 @@ def block_domains(domains):
         
     content = get_hosts_content()
     # Always clean up existing blocks first to avoid duplicates
-    clean_content = remove_plumb_blocks(content)
+    clean_content = remove_deepdive_blocks(content)
     
     if not clean_content.endswith('\n'):
         clean_content += '\n'
@@ -59,14 +59,14 @@ def block_domains(domains):
 
 def unblock_domains():
     content = get_hosts_content()
-    clean_content = remove_plumb_blocks(content)
+    clean_content = remove_deepdive_blocks(content)
     write_hosts_content(clean_content)
 
 def install_polkit():
     script_path = os.path.abspath(__file__)
     # We use sudoers.d because pkexec does not reliably grant passwordless execution to interpreted scripts
     sudoers_content = f"ALL ALL=(root) NOPASSWD: /usr/bin/python3 {script_path} *\n"
-    rule_path = "/etc/sudoers.d/99-plumb-blocker"
+    rule_path = "/etc/sudoers.d/99-deepdive-blocker"
     
     os.makedirs("/etc/sudoers.d", exist_ok=True)
     with open(rule_path, "w") as f:

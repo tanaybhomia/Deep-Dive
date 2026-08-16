@@ -4,8 +4,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Adw, Gdk, Gio, GObject, GLib
-from plumb.timer import TimerLogic, StopwatchLogic
-from plumb.database import db
+from deepdive.timer import TimerLogic, StopwatchLogic
+from deepdive.database import db
 
 import random
 import math
@@ -201,10 +201,10 @@ class BreakOverlayWindow(Gtk.Window):
         self.time_label.set_label(time_str)
 
 
-class PlumbWindow(Adw.ApplicationWindow):
+class DeepDiveWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.set_title("Plumb")
+        self.set_title("Deep Dive")
         self.set_default_size(435, 640)
         self.set_size_request(360, 500)
 
@@ -285,7 +285,7 @@ class PlumbWindow(Adw.ApplicationWindow):
 
         menu.append("Keyboard Shortcuts", "app.shortcuts")
         menu.append("Preferences", "app.preferences")
-        menu.append("About Plumb", "app.about")
+        menu.append("About Deep Dive", "app.about")
 
         self.menu_button.set_menu_model(menu)
         self.header.pack_end(self.menu_button)
@@ -304,7 +304,7 @@ class PlumbWindow(Adw.ApplicationWindow):
 
         self.pomodoro_page = self._build_pomodoro_page()
         self.timer_page = self._build_timer_page()
-        from plumb.stats import StatsPage
+        from deepdive.stats import StatsPage
         self.stats_page = StatsPage(main_window=self)
 
         pomo_clamp = Adw.Clamp(maximum_size=500, child=self.pomodoro_page)
@@ -879,7 +879,7 @@ class PlumbWindow(Adw.ApplicationWindow):
 
     def _on_compact_clicked(self, button):
         if not hasattr(self, 'compact_window'):
-            from plumb.compact import CompactWindow
+            from deepdive.compact import CompactWindow
             self.compact_window = CompactWindow(self.get_application(), self)
             
         self.compact_window.present()
@@ -1010,7 +1010,7 @@ class PlumbWindow(Adw.ApplicationWindow):
 
         app = self.get_application()
         if app:
-            app.send_notification("plumb-timer", notification)
+            app.send_notification("deepdive-timer", notification)
 
     def _on_timer_finish(self, completed_state, completed_duration):
         if not self.timer.is_running:

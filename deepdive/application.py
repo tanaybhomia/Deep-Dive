@@ -4,13 +4,13 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Adw, Gio
-from plumb.window import PlumbWindow
+from deepdive.window import DeepDiveWindow
 
 
-class PlumbApplication(Adw.Application):
+class DeepDiveApplication(Adw.Application):
     def __init__(self):
         super().__init__(
-            application_id="com.github.tanay.Plumb",
+            application_id="io.github.tanaybhomia.DeepDive",
             flags=Gio.ApplicationFlags.FLAGS_NONE,
         )
         self._setup_actions()
@@ -75,7 +75,7 @@ class PlumbApplication(Adw.Application):
 
     def _on_theme_system(self, action, param):
         from gi.repository import Adw, GLib
-        from plumb.database import db
+        from deepdive.database import db
         win = self.props.active_window
         if win:
             win.add_css_class("no-transition")
@@ -94,7 +94,7 @@ class PlumbApplication(Adw.Application):
 
     def _on_theme_light(self, action, param):
         from gi.repository import Adw, GLib
-        from plumb.database import db
+        from deepdive.database import db
         win = self.props.active_window
         if win:
             win.add_css_class("no-transition")
@@ -113,7 +113,7 @@ class PlumbApplication(Adw.Application):
 
     def _on_theme_dark(self, action, param):
         from gi.repository import Adw, GLib
-        from plumb.database import db
+        from deepdive.database import db
         win = self.props.active_window
         if win:
             win.add_css_class("no-transition")
@@ -265,10 +265,10 @@ class PlumbApplication(Adw.Application):
                 win._on_compact_clicked(None)
 
     def _on_preferences_action(self, action, param):
-        from plumb.preferences import PlumbPreferencesWindow
+        from deepdive.preferences import DeepDivePreferencesWindow
 
         win = self.props.active_window
-        prefs_win = PlumbPreferencesWindow(
+        prefs_win = DeepDivePreferencesWindow(
             timer=win.timer if hasattr(win, "timer") else None,
             stopwatch=win.stopwatch if hasattr(win, "stopwatch") else None,
             transient_for=win
@@ -277,12 +277,12 @@ class PlumbApplication(Adw.Application):
 
     def _on_about_action(self, action, param):
         about = Adw.AboutWindow(
-            application_name="Plumb",
-            application_icon="com.github.tanay.Plumb",
-            developer_name="Tanay",
+            application_name="Deep Dive",
+            application_icon="io.github.tanaybhomia.DeepDive",
+            developer_name="Tanay Bhomia",
             version="1.0.0",
-            website="https://github.com/tanay/Plumb",
-            issue_url="https://github.com/tanay/Plumb/issues",
+            website="https://github.com/tanaybhomia/DeepDive",
+            issue_url="https://github.com/tanaybhomia/DeepDive/issues",
             copyright="© 2026 Tanay Bhomia",
             license_type=Gtk.License.GPL_3_0,
             transient_for=self.props.active_window,
@@ -332,7 +332,7 @@ class PlumbApplication(Adw.Application):
                 win = windows[0]
 
         if not win:
-            win = PlumbWindow(application=self)
+            win = DeepDiveWindow(application=self)
 
             def _on_window_close(*args):
                 self._attempt_quit(win)

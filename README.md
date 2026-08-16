@@ -1,11 +1,11 @@
 Under development and NOT ready yet.
 
 <div align="center">
-  <img src="data/icons/io.github.tanaybhomia.Plumb.svg" alt="Deep Dive Icon" width="128" height="128"> 
+  <img src="data/icons/io.github.tanaybhomia.DeepDive.svg" alt="Deep Dive Icon" width="128" height="128"> 
   <h1>Deep Dive</h1>
   <p><strong>A hyper-focused, beautifully designed Pomodoro timer for GNOME that enforces strict discipline.</strong></p>
 
-  <a href="https://flathub.org/apps/io.github.tanaybhomia.Plumb">
+  <a href="https://flathub.org/apps/io.github.tanaybhomia.DeepDive">
     <img src="https://flathub.org/api/badge?svg&locale=en" alt="Download on Flathub" height="56">
   </a>
   <br><br>
@@ -13,8 +13,8 @@ Under development and NOT ready yet.
   <a href="#"><img src="https://img.shields.io/badge/Platform-GNOME-4A86CF?style=flat-square" alt="Platform: GNOME"></a>
   <a href="#"><img src="https://img.shields.io/badge/GTK-4.0-white?style=flat-square&logo=gtk" alt="GTK4"></a>
   <a href="#"><img src="https://img.shields.io/badge/License-GPLv3-blue?style=flat-square" alt="License: GPLv3"></a>
-  <a href="https://github.com/tanaybhomia/Plumb/stargazers"><img src="https://img.shields.io/github/stars/tanaybhomia/Plumb?style=flat-square&logo=github&color=gold" alt="GitHub Stars"></a>
-  <a href="https://flathub.org/apps/io.github.tanaybhomia.Plumb"><img src="https://img.shields.io/flathub/downloads/io.github.tanaybhomia.Plumb?style=flat-square&logo=flathub&color=blue" alt="Flathub Downloads"></a>
+  <a href="https://github.com/tanaybhomia/DeepDive/stargazers"><img src="https://img.shields.io/github/stars/tanaybhomia/DeepDive?style=flat-square&logo=github&color=gold" alt="GitHub Stars"></a>
+  <a href="https://flathub.org/apps/io.github.tanaybhomia.DeepDive"><img src="https://img.shields.io/flathub/downloads/io.github.tanaybhomia.DeepDive?style=flat-square&logo=flathub&color=blue" alt="Flathub Downloads"></a>
   <br><br>
 
   <picture>
@@ -49,7 +49,7 @@ Most pomodoro timers are just simple countdowns. Deep Dive is designed with the 
 Deep Dive is officially distributed through Flathub, making it easy to install on any Linux distribution.
 
 ```bash
-flatpak install flathub io.github.tanaybhomia.Plumb
+flatpak install flathub io.github.tanaybhomia.DeepDive
 ```
 
 ## Contribution & Development
@@ -80,11 +80,11 @@ Deep Dive is free and open-source software licensed under the **GNU General Publ
 ## Stargazers
 
 Thank you to everyone who has starred the repository and supported the project!
-<a href="https://www.star-history.com/?repos=tanaybhomia%2FPlumb&type=timeline&legend=top-left">
+<a href="https://www.star-history.com/?repos=tanaybhomia%2FDeepDive&type=timeline&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=tanaybhomia/Plumb&type=timeline&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=tanaybhomia/Plumb&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=tanaybhomia/Plumb&type=timeline&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=tanaybhomia/DeepDive&type=timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=tanaybhomia/DeepDive&type=timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=tanaybhomia/DeepDive&type=timeline&legend=top-left" />
  </picture>
 </a>
 

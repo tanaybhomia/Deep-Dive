@@ -3,7 +3,7 @@ import gi
 gi.require_version("GLib", "2.0")
 gi.require_version("Gio", "2.0")
 from gi.repository import GLib, Gio
-from plumb.database import db
+from deepdive.database import db
 
 
 class TimerState:

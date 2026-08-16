@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 
 class Database:
     def __init__(self):
-        data_dir = os.path.join(os.path.expanduser("~"), ".local", "share", "plumb")
+        data_dir = os.path.join(os.path.expanduser("~"), ".local", "share", "deepdive")
         os.makedirs(data_dir, exist_ok=True)
-        self.db_path = os.path.join(data_dir, "plumb.db")
+        self.db_path = os.path.join(data_dir, "deepdive.db")
         self._init_db()
 
     def _init_db(self):

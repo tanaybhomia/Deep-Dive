@@ -6,5 +6,5 @@
 * [Brand Guidelines](BRANDING)
 
 ### Links
-* [Source Code](https://github.com/tanaybhomia/Plumb)
-* [Flathub](https://flathub.org/apps/io.github.tanaybhomia.Plumb)
+* [Source Code](https://github.com/tanaybhomia/DeepDive)
+* [Flathub](https://flathub.org/apps/io.github.tanaybhomia.DeepDive)

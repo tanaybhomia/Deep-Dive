@@ -6,15 +6,15 @@ import argparse
 from datetime import datetime, timedelta
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate mock data for Plumb stats testing.")
+    parser = argparse.ArgumentParser(description="Generate mock data for Deep Dive stats testing.")
     parser.add_argument("--clear", action="store_true", help="Clear all existing sessions and non-default projects")
     args = parser.parse_args()
 
-    db_path = os.path.join(os.path.expanduser("~"), ".local", "share", "plumb", "plumb.db")
+    db_path = os.path.join(os.path.expanduser("~"), ".local", "share", "deepdive", "deepdive.db")
     if not os.path.exists(db_path):
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
-    print(f"Connecting to Plumb database at: {db_path}")
+    print(f"Connecting to Deep Dive database at: {db_path}")
     with sqlite3.connect(db_path) as conn:
         # Ensure tables exist
         conn.execute("""
@@ -42,7 +42,7 @@ def main():
             return
 
         # 1. Create realistic test projects
-        project_names = ["Plumb Development", "Open Source Contribute", "Reading & Research", "System Architecture"]
+        project_names = ["Deep Dive Development", "Open Source Contribute", "Reading & Research", "System Architecture"]
         project_ids = [1]  # Default Project
         for name in project_names:
             try:
@@ -112,7 +112,7 @@ def main():
 
         conn.commit()
         print(f"Successfully generated {sessions_added} mock sessions across {len(project_ids)} projects!")
-        print("Run Plumb now to explore Today, Week, Month, Year, and Heatmap visualizations!")
+        print("Run Deep Dive now to explore Today, Week, Month, Year, and Heatmap visualizations!")
         print("(To reset/clear all mock data later, run: python3 generate_mock_data.py --clear)")
 
 if __name__ == "__main__":
