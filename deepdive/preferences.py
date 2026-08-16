@@ -646,8 +646,28 @@ class DeepDivePreferencesWindow(Adw.PreferencesWindow):
                 
                 def run_installation(pref_win):
                     try:
+                        # Read the local blocker code
+                        blocker_src = os.path.abspath(os.path.join(os.path.dirname(__file__), "blocker.py"))
+                        with open(blocker_src, "r") as f:
+                            blocker_code = f.read()
+
+                        is_flatpak = os.path.exists("/.flatpak-info")
+                        
+                        script_command = """
+mkdir -p /usr/local/bin
+cat > /usr/local/bin/deepdive-blocker.py
+chmod 755 /usr/local/bin/deepdive-blocker.py
+echo "ALL ALL=(root) NOPASSWD: /usr/bin/python3 /usr/local/bin/deepdive-blocker.py *" > /etc/sudoers.d/99-deepdive-blocker
+chmod 440 /etc/sudoers.d/99-deepdive-blocker
+"""
+                        
+                        cmd = ["pkexec", "bash", "-c", script_command]
+                        if is_flatpak:
+                            cmd = ["flatpak-spawn", "--host"] + cmd
+                            
                         result = subprocess.run(
-                            ["pkexec", "/usr/bin/python3", script_path, "install"],
+                            cmd,
+                            input=blocker_code,
                             capture_output=True, text=True
                         )
                         if result.returncode == 0:

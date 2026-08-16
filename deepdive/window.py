@@ -774,10 +774,14 @@ class DeepDiveWindow(Adw.ApplicationWindow):
             
         domains_str = ",".join(websites)
         import os, subprocess
-        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "blocker.py"))
+        
+        is_flatpak = os.path.exists("/.flatpak-info")
+        cmd = ["sudo", "-n", "/usr/bin/python3", "/usr/local/bin/deepdive-blocker.py", "block", domains_str]
+        if is_flatpak:
+            cmd = ["flatpak-spawn", "--host"] + cmd
         
         try:
-            result = subprocess.run(["sudo", "-n", "/usr/bin/python3", script_path, "block", domains_str], capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
                 print(f"Failed to start blocker: {result.stderr}")
                 from gi.repository import GLib, Adw
@@ -787,11 +791,18 @@ class DeepDiveWindow(Adw.ApplicationWindow):
             print(f"Exception starting blocker: {e}")
 
     def _unblock_websites(self):
+        if db.get_setting("polkit_installed", "False") != "True":
+            return
+            
         import os, subprocess
-        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "blocker.py"))
+        
+        is_flatpak = os.path.exists("/.flatpak-info")
+        cmd = ["sudo", "-n", "/usr/bin/python3", "/usr/local/bin/deepdive-blocker.py", "unblock"]
+        if is_flatpak:
+            cmd = ["flatpak-spawn", "--host"] + cmd
         
         try:
-            result = subprocess.run(["sudo", "-n", "/usr/bin/python3", script_path, "unblock"], capture_output=True, text=True)
+            result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
                 print(f"Failed to unblock: {result.stderr}")
                 from gi.repository import GLib, Adw
