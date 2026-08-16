@@ -347,6 +347,7 @@ section {
     padding: 0 1rem;
     color: #ffffff;
     line-height: 1.6;
+    min-height: 5.5rem;
 }
 
 .card-image-wrapper {
@@ -357,21 +358,29 @@ section {
     border-radius: var(--radius-medium);
     margin-bottom: 0;
     display: flex;
-    align-items: center; /* Center horizontally/vertically */
+    align-items: flex-start; /* Align images to the top so headers match */
     justify-content: center;
 }
 
 .card-image-wrapper picture {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
+}
+
+.card-image-wrapper.center-image {
+    align-items: center; /* Center horizontally/vertically */
+}
+
+.card-image-wrapper.center-image picture {
+    align-items: center;
 }
 
 /* Specific styling to scale up the mini mode slightly */
 .mini-mode-picture .card-visual {
     width: auto;
-    transform: scale(1.25);
+    transform: scale(1.0);
 }
 
 .card-visual {
@@ -458,7 +467,7 @@ section {
 
 /* SUPPORT US SECTION */
 #support-us {
-    background: linear-gradient(135deg, #813d9c, #c061cb); /* GNOME Dark Pink (Purple 4) to Medium Pink (Purple 2) */
+    background: linear-gradient(135deg, #b30068, #d5007b); /* GNOME Pink 5 to Pink 4 */
     padding: 4rem 2rem;
     text-align: center;
     width: 100vw;
@@ -544,7 +553,7 @@ section {
 }
 
 #donate-options {
-    background-color: #9141ac; /* GNOME Purple 3 */
+    background: linear-gradient(135deg, #b30068, #d5007b); /* GNOME Pink 5 to Pink 4 */
     padding: 6rem 2rem 8rem;
     text-align: left;
     width: 100vw;
