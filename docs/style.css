@@ -19,7 +19,7 @@
     --radius-large: 24px;
     --radius-pill: 9999px;
     
-    --features-bg: #26a269; /* Custom Darker Green for Dark Mode */
+    --features-bg: #813d9c; /* GNOME Purple 4 for Dark Mode */
 }
 
 *, *::before, *::after {
@@ -342,10 +342,11 @@ section {
 }
 
 .feature-card p {
-    font-size: 1rem;
+    font-size: 1.2rem;
     margin-bottom: 2rem;
     padding: 0 1rem;
-    color: rgba(255, 255, 255, 0.9);
+    color: #ffffff;
+    line-height: 1.6;
 }
 
 .card-image-wrapper {
@@ -766,7 +767,7 @@ footer {
 
 @media (prefers-color-scheme: light) {
     :root {
-        --features-bg: #2ec27e; /* Standard GNOME Green 5 for Light Mode */
+        --features-bg: #9141ac; /* GNOME Purple 3 for Light Mode */
     }
     
     #marquee {
