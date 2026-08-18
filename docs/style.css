@@ -207,8 +207,6 @@ section {
     height: 160px;
     margin-bottom: 0.5rem;
     padding: 12px;
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-medium);
     /* Transition is for smooth exit from float animation */
     transition: transform 0.4s ease-out;
 }
