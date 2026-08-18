@@ -122,7 +122,7 @@ class CompactWindow(Gtk.ApplicationWindow):
             if self.main_window.timer.is_running:
                 is_submerged = getattr(self.main_window, "is_submerged", False)
                 if self.main_window.timer.state == "Focus" and is_submerged:
-                    self.btn_play_pause.set_icon_name("anchor-symbolic")
+                    self.btn_play_pause.set_icon_name("io.github.tanaybhomia.DeepDive-symbolic")
                     self.btn_play_pause.set_sensitive(False)
                     self.btn_skip.set_label("Give Up")
                     self.btn_skip.add_css_class("destructive-action")

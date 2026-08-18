@@ -234,7 +234,7 @@ class DeepDiveWindow(Adw.ApplicationWindow):
         self.header.pack_start(self.btn_compact)
         
         self.is_submerged = db.get_setting("submerge_mode", "False") == "True"
-        self.btn_submerge = Gtk.ToggleButton(icon_name="anchor-symbolic")
+        self.btn_submerge = Gtk.ToggleButton(icon_name="io.github.tanaybhomia.DeepDive-symbolic")
         self.btn_submerge.set_active(self.is_submerged)
         self.btn_submerge.set_tooltip_text("Submerge Mode")
         self.btn_submerge.set_can_focus(False)
@@ -704,7 +704,7 @@ class DeepDiveWindow(Adw.ApplicationWindow):
                 self._block_websites()
 
             if self.is_submerged and self.timer.state == "Focus":
-                self.play_pause_btn.set_icon_name("anchor-symbolic")
+                self.play_pause_btn.set_icon_name("io.github.tanaybhomia.DeepDive-symbolic")
                 self.play_pause_btn.set_sensitive(False)
                 
                 self.break_btn.set_label("Give Up")
@@ -732,7 +732,7 @@ class DeepDiveWindow(Adw.ApplicationWindow):
                 
             self._unblock_websites()
             if self.is_submerged:
-                self.play_pause_btn.set_icon_name("anchor-symbolic")
+                self.play_pause_btn.set_icon_name("io.github.tanaybhomia.DeepDive-symbolic")
             else:
                 self.play_pause_btn.set_icon_name("media-playback-start-symbolic")
             self.play_pause_btn.set_sensitive(True)
@@ -1067,7 +1067,7 @@ class DeepDiveWindow(Adw.ApplicationWindow):
                 self._block_websites()
 
             if self.is_submerged:
-                self.sw_play_pause_btn.set_icon_name("anchor-symbolic")
+                self.sw_play_pause_btn.set_icon_name("io.github.tanaybhomia.DeepDive-symbolic")
                 self.sw_play_pause_btn.set_sensitive(False)
                 
                 self.sw_restart_btn.set_label("Give Up")
@@ -1091,7 +1091,7 @@ class DeepDiveWindow(Adw.ApplicationWindow):
             self.btn_submerge.set_sensitive(not (is_active or pomo_active))
                 
             if self.is_submerged:
-                self.sw_play_pause_btn.set_icon_name("anchor-symbolic")
+                self.sw_play_pause_btn.set_icon_name("io.github.tanaybhomia.DeepDive-symbolic")
             else:
                 self.sw_play_pause_btn.set_icon_name("media-playback-start-symbolic")
             self.sw_play_pause_btn.set_sensitive(True)
