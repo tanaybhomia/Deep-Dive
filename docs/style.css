@@ -78,12 +78,12 @@ p {
 /* Buttons */
 .btn {
     display: inline-block;
-    padding: 0.8rem 1.6rem;
+    padding: 0.8rem 1.8rem;
     font-size: 1rem;
     font-variation-settings: "wght" 700;
     text-decoration: none;
     border-radius: var(--radius-pill);
-    transition: padding 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
     cursor: pointer;
     background-color: rgba(255, 255, 255, 0.05);
     color: #ffffff;
@@ -91,17 +91,22 @@ p {
 }
 
 .btn:hover {
-    padding: 0.8rem 1.8rem; /* Expands the button, but text size stays the same */
     background-color: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.2);
 }
 
 .btn-download {
-    /* Transparent aesthetic handles this now */
+    background-color: #9bdcd6;
+    color: #1e1e1e;
+    border: 1px solid transparent;
+}
+
+.btn-download:hover {
+    background-color: #b1e8e2;
 }
 
 .btn-sponsor {
-    /* Transparent aesthetic handles this now */
+    /* Secondary button keeps default styling */
 }
 
 
@@ -178,14 +183,47 @@ section {
     height: 100%;
 }
 
+@keyframes diveIn {
+    0% {
+        transform: translateY(-120px) scale(0.9);
+        opacity: 0;
+    }
+    60% {
+        transform: translateY(15px) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.app-icon-wrapper {
+    animation: diveIn 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
 .app-icon {
-    width: 96px;
-    height: 96px;
-    margin-bottom: 1.5rem;
+    width: 160px;
+    height: 160px;
+    margin-bottom: 0.5rem;
     padding: 12px;
     border: 1px solid var(--card-border);
     border-radius: var(--radius-medium);
-    /* Remove animation for the outlined icon */
+    /* Transition is for smooth exit from float animation */
+    transition: transform 0.4s ease-out;
+}
+
+@keyframes floatIcon {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+.hero-content:has(.btn-download:hover) .app-icon {
+    animation: floatIcon 2.5s ease-in-out infinite;
 }
 
 .app-title {
@@ -203,6 +241,11 @@ section {
     margin-bottom: 0.5rem;
     align-items: center;
     justify-content: center;
+}
+
+.action-buttons .btn {
+    min-width: 150px;
+    text-align: center;
 }
 
 .hero-image-container {
@@ -440,9 +483,15 @@ section {
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-.btn-involve:hover {
+.btn-involve:hover:not(.disabled) {
     background-color: #deddda;
     transform: translateY(-2px);
+}
+
+.btn-involve.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
 }
 
 .conduct-text {

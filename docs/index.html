@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deep Dive</title>
+    <link rel="icon" type="image/svg+xml" href="assets/images/app-icon.svg">
     <!-- Use Adwaita Sans from Tuba's public assets for true GNOME typography -->
     <link rel="stylesheet" href="https://tuba.geopjr.dev/assets/fonts/adwaita-sans/adwaita-sans.css">
     <link rel="stylesheet" href="style.css">
@@ -23,9 +24,11 @@
             </div>
             
             <div class="hero-content">
-                <img class="app-icon" src="assets/images/app-icon.png" alt="Deep Dive Icon" width="128" height="128">
+                <div class="app-icon-wrapper">
+                    <img class="app-icon" src="assets/images/app-icon.svg" alt="Deep Dive Icon" width="160" height="160">
+                </div>
                 <h1 class="app-title">Deep Dive</h1>
-                <p class="app-subtitle">Find your focus.</p>
+                <p class="app-subtitle">Deep dive into focus</p>
                 
                 <div class="action-buttons">
                     <a href="#download" class="btn btn-download">Download</a>
@@ -173,10 +176,10 @@
                     <h2>Get Involved</h2>
                     <p>Deep Dive is completely open-source. Our software has no restrictions on use and respects your privacy. Learn how to get involved:</p>
                     <div class="involvement-grid">
-                        <a href="#" class="btn-involve">Code</a>
-                        <a href="#" class="btn-involve">Design</a>
-                        <a href="#" class="btn-involve">Translation</a>
-                        <a href="#" class="btn-involve">Testing</a>
+                        <a href="https://github.com/tanaybhomia/DeepDive" class="btn-involve">Code</a>
+                        <a href="https://github.com/tanaybhomia/DeepDive" class="btn-involve">Design</a>
+                        <a href="#" class="btn-involve disabled">Translation</a>
+                        <a href="https://github.com/tanaybhomia/DeepDive/issues" class="btn-involve">Testing</a>
                     </div>
                     <p class="conduct-text">Please review our <a href="#">Code of Conduct</a> before contributing. See <a href="#">other ways</a> you can join to make Deep Dive better.</p>
                 </div>
