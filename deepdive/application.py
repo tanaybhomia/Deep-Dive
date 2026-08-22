@@ -51,6 +51,10 @@ class DeepDiveApplication(Adw.Application):
         about_action.connect("activate", self._on_about_action)
         self.add_action(about_action)
 
+        donate_action = Gio.SimpleAction.new("donate", None)
+        donate_action.connect("activate", self._on_donate_action)
+        self.add_action(donate_action)
+
         toggle_ironclad_action = Gio.SimpleAction.new("toggle-submerge", None)
         toggle_ironclad_action.connect("activate", self._on_toggle_submerge)
         self.add_action(toggle_ironclad_action)
@@ -275,20 +279,55 @@ class DeepDiveApplication(Adw.Application):
         )
         prefs_win.present()
 
+    def _on_donate_action(self, action, param):
+        Gio.AppInfo.launch_default_for_uri("https://tanaybhomia.github.io/Deep-Dive/donate.html", None)
+
     def _on_about_action(self, action, param):
         about = Adw.AboutWindow(
             application_name="Deep Dive",
             application_icon="io.github.tanaybhomia.DeepDive",
             developer_name="Tanay Bhomia",
-            version="1.0.0",
-            website="https://github.com/tanaybhomia/DeepDive",
-            issue_url="https://github.com/tanaybhomia/DeepDive/issues",
+            version="1.4.0",
+            website="https://tanaybhomia.github.io/Deep-Dive/",
+            issue_url="https://github.com/tanaybhomia/Deep-Dive/issues",
+            support_url="https://github.com/tanaybhomia/Deep-Dive/discussions",
             copyright="© 2026 Tanay Bhomia",
             license_type=Gtk.License.GPL_3_0,
             transient_for=self.props.active_window,
         )
-        about.add_credit_section("Code by", ["Tanay Bhomia"])
-        about.add_credit_section("Icon by", ["[Icon Designer Name]"])
+        
+        about.set_release_notes("""<ul>
+  <li>General improvements and bug fixes.</li>
+</ul>""")
+
+        about.add_link("Wiki", "https://github.com/tanaybhomia/Deep-Dive/wiki")
+        about.add_link("Donate", "https://tanaybhomia.github.io/Deep-Dive/donate.html")
+
+        debug_info = (
+            "os: Fedora Linux 44 (Workstation Edition)\n"
+            "prefix: /usr\n"
+            "flatpak: false\n"
+            "version: 1.4.0\n"
+            "python: 3.14.6\n"
+            "gtk: 4.22.4\n"
+            "libadwaita: 1.9.3\n"
+            "tesseract: 5.5.3\n"
+            "pillow: 12.3.0"
+        )
+        about.set_debug_info(debug_info)
+        about.set_debug_info_filename("DeepDive_Debug_Info.txt")
+
+        about.add_credit_section("Code by", ["Tanay Bhomia https://tanaybhomia.github.io/"])
+        about.add_credit_section("Artwork by", ["gnoman"])
+
+        about.add_acknowledgement_section("Special thanks", ["Special thanks to gnoman for helping me throughout the design process of the app. from icon to theme to brand of the app itself"])
+
+        def on_activate_link(window, uri):
+            Gio.AppInfo.launch_default_for_uri(uri, None)
+            return True
+
+        about.connect("activate-link", on_activate_link)
+
         about.present()
 
     def _on_toggle_submerge(self, action, param):

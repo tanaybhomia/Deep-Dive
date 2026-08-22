@@ -286,6 +286,7 @@ class DeepDiveWindow(Adw.ApplicationWindow):
         menu.append("Keyboard Shortcuts", "app.shortcuts")
         menu.append("Preferences", "app.preferences")
         menu.append("About Deep Dive", "app.about")
+        menu.append("Donate to Deep Dive", "app.donate")
 
         self.menu_button.set_menu_model(menu)
         self.header.pack_end(self.menu_button)
