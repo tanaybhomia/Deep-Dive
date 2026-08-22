@@ -1,7 +1,5 @@
-Under development and NOT ready yet.
-
 <div align="center">
-  <img src="data/icons/io.github.tanaybhomia.DeepDive.svg" alt="Deep Dive Icon" width="128" height="128"> 
+  <img src="/assets/icons/io.github.tanaybhomia.DeepDive.svg" alt="Deep Dive Icon" width="128" height="128"> 
   <h1>Deep Dive</h1>
   <p><strong>A hyper-focused, beautifully designed Pomodoro timer for GNOME that enforces strict discipline.</strong></p>
 
