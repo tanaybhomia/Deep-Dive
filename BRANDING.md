@@ -1,44 +1,40 @@
-# Deep Dive: Brand & Feature Guidelines
+# About Deep Dive
 
-## 1. Core Identity & Philosophy
+## 1. What is Deep Dive?
 **Name:** Deep Dive (formerly Plumb)
-**The Philosophy:** Most productivity timers are passive—they count down while you get distracted. Deep Dive is *active*. Based on the concept of "Submerging," it operates on the principle that deep work requires strict, physical boundaries. When you start a timer, you are going underwater where surface-level distractions cannot reach you. You either finish the dive, or you deliberately "Give Up" and surface early.
 
-## 2. Taglines & Positioning
-**Primary Tagline:** 
-* "The uncompromising Pomodoro timer for GNOME."
+**The Idea:** Regular timers just count down the minutes, but they don't stop you from getting distracted. Deep Dive is different. When you start a timer, it's like going underwater—distractions can't reach you. You either finish the timer, or you have to click a button that says "Give Up" to stop early.
 
-**Alternative Taglines:**
-* "Submerge yourself. Get work done."
-* "Built for deep work, strict discipline, and zero distractions."
-* "A timer that actually forces you to focus."
+## 2. Taglines
+* "A strict Pomodoro timer for GNOME."
+* "A timer that actually makes you focus."
 
-## 3. The "Deep Dive" Lexicon
-* **Submerge Mode:** The strict state where the user is locked into a focus block. 
-* **Give Up:** The psychological friction button. Instead of a casual "Pause" or "Skip," users must actively admit defeat to break a session early.
-* **Surface (Breaks):** The state of returning to regular desktop usage (notifications enabled, websites unblocked).
+## 3. Terms We Use
+* **Submerge Mode:** The mode where you can't pause the timer. 
+* **Give Up:** The button you press to stop a session early. We use "Give Up" instead of "Pause" or "Stop" to make you think before quitting.
+* **Surface (Breaks):** When your work timer ends and you take a break. Notifications turn back on and websites are unblocked.
 
-## 4. Main Features (The "Why")
+## 4. Main Features
 
-### The Submerge Engine (Core Feature)
-The heart of Deep Dive. When Submerge is active, the app removes the ability to pause or skip. It is a strict "commit or quit" contract between the user and their work.
+### Submerge Mode
+When you turn this on, you can't pause or skip your timer. You have to finish your work or click "Give Up".
 
-### System-Level Distraction Blocking
-Using a seamless Polkit integration, Deep Dive doesn't just ask you to stay focused—it modifies your `/etc/hosts` file at the system level to instantly block websites like Reddit, Twitter, or YouTube the second a dive begins. 
+### Web Blocker
+The app edits your computer's `/etc/hosts` file to block websites like Reddit or YouTube while your timer is running.
 
-### Full-Screen Break Overlays
-When it's time to surface, Deep Dive takes over the screen. A native, multi-monitor supported overlay physically forces the user to stop working and take a screen break, displaying a motivational quote.
+### Break Screen
+When it's time for a break, the app covers your entire screen so you are forced to stop working. 
 
-### GNOME DND Sync
-Deep integration with the Linux desktop. Starting a dive automatically triggers GNOME's "Do Not Disturb" mode, silencing all notifications, and seamlessly restores them during breaks.
+### Do Not Disturb
+When you start a timer, the app turns on GNOME's "Do Not Disturb" mode so you don't get notifications. It turns them back on when you take a break.
 
-### Fluid Mini-Mode
-A sleek, floating compact window that keeps the timer visible without taking up valuable screen real estate, perfectly adapting to light/dark themes.
+### Mini Mode
+You can shrink the app into a small window that stays on top of your other apps so you can always see the timer.
 
 ### Project Tracking
-Built-in SQLite database tracking that silently logs focused time against user-defined projects, accessible via the active project selector.
+The app remembers how much time you spend on different projects and shows you charts of your progress.
 
-## 5. Visual Identity (GNOME HIG)
-* **Design System:** Strict adherence to GTK4 and Libadwaita.
-* **Colors:** Deep blues, dark themes, and high-contrast accents to represent the ocean depths and focus states.
-* **Typography:** Clean, native GNOME fonts (Inter/Cantarell), utilizing bold weights for active states to ensure readability at a glance.
+## 5. Design
+* **Style:** The app is built to look like a normal GNOME app using GTK4.
+* **Colors:** We use deep blues and dark colors to match the underwater theme.
+* **Fonts:** We use the standard GNOME fonts so it fits in perfectly with your desktop.

@@ -1,42 +1,54 @@
 # How to Use Deep Dive
 
-Deep Dive isn't just a countdown timer—it's designed with strict, built-in friction to force you to focus. Below are the core workflows you need to understand to get the most out of the app.
+Deep Dive is a timer that stops you from getting distracted. Here is how to use its main features.
 
 ---
 
-## ⚓ Submerge Mode
-**What it is:** Submerge Mode is the ultimate productivity contract. When you click the anchor icon before starting a Pomodoro, you are locked in. 
+## Submerge Mode
+**What it is:** When you turn this on, you can't pause or skip your work session. 
 
-**Why it is there:** Standard timers let you casually pause them when you get a text message, or skip them when you feel lazy. Submerge Mode removes those buttons. Your only option to stop the timer early is to click a bright red **"Give Up"** button, which forces you to psychologically admit defeat and discards the session entirely.
+**Why we made it:** Regular timers let you pause whenever you want. Submerge Mode removes the pause button. If you really need to stop early, you have to click a **"Give Up"** button. This deletes your current session and makes you think twice before quitting.
 
 **How to use it:** 
-1. Select a Project from the dropdown.
-2. Toggle the Anchor button next to the Play button so it is highlighted.
-3. Click Play. You are now Submerged. There is no pausing until the timer hits zero.
+1. Pick a project from the dropdown list.
+2. Click the Anchor button next to the Play button to turn it on.
+3. Click Play. The timer starts and you can't pause it until the time is up.
 
 ---
 
-## 🛡️ Web Blocker
-**What it is:** A system-level blocker that prevents your browser from accessing distracting websites (like Reddit, YouTube, or Twitter) while a focus session is active.
+## Minimum Session Time
+**What it is:** A setting that requires you to work for a certain amount of time (like 5 minutes) before a session is counted and saved to your stats.
 
-**How it works:** Under the hood, Deep Dive uses Polkit to safely modify your Linux `/etc/hosts` file. It routes distracting domains to `0.0.0.0` the second a timer starts, and instantly restores the file the second a break begins. 
+**Why we made it:** If you start a timer and immediately get distracted or stop it, that time shouldn't count toward your productive hours. 
 
 **How to use it:**
-1. Click the hamburger menu (three dots) and open **Preferences**.
-2. Navigate to the **Web Blocker** tab.
-3. Click "Install Polkit Rule". You will be asked for your system password *once* so that the app can block websites seamlessly in the future without ever asking for your password again.
-4. Toggle on "Enable Web Blocker". You can optionally check the box to enforce the blocker even when Submerge Mode is turned off.
-5. Add your distracting domains (e.g., `reddit.com`, `twitter.com`) to the list.
+1. Click the menu button (three dots) and open **Preferences**.
+2. Set your preferred minimum time limit. 
+3. When you are in Submerge Mode, if you click "Give Up" before this minimum time has passed, the session will be discarded completely. If you pass the minimum time and then give up, the time you spent working will still be saved.
 
 ---
 
-## 📊 Project Tracking & Stats
-**What it is:** A built-in dashboard that visualizes where your time went. It tracks completed Pomodoros (25-minute blocks) and logs your total focus time.
+## Web Blocker
+**What it is:** A tool that stops you from opening distracting websites like Reddit or YouTube while you are working.
 
-**How it works:** Every time a timer naturally completes (without you pressing "Give Up"), the time is securely logged into a local, private SQLite database stored directly on your machine.
+**How it works:** The app edits your computer's `/etc/hosts` file to block the websites when a timer starts, and unblocks them when a break starts.
+
+**How to use it:**
+1. Click the menu button (three dots) and open **Preferences**.
+2. Go to the **Web Blocker** tab.
+3. Click "Install Polkit Rule". It will ask for your password once. This allows the app to block websites automatically in the future without asking for your password every time.
+4. Turn on "Enable Web Blocker". You can also choose to block websites even when Submerge Mode is off.
+5. Type in the websites you want to block (like `reddit.com` or `twitter.com`).
+
+---
+
+## Project Tracking & Stats
+**What it is:** A page that shows how much time you spent working on different things. 
+
+**How it works:** When a timer finishes normally, the app saves that time on your computer.
 
 **How to use it:**
 1. Open **Preferences**.
-2. Go to the **Projects** tab. Here, you can define different tags like "Coding", "Reading", or "Email".
-3. Before starting a timer, select the relevant project from the dropdown selector on the main screen. 
-4. The Stats page (accessible from the main window) will automatically generate charts and total hour breakdowns based on these projects, helping you review your productivity over the week.
+2. Go to the **Projects** tab. Add tags for your work, like "Coding", "Reading", or "Email".
+3. Before starting a timer, pick one of these projects from the dropdown menu. 
+4. Click the Stats button on the main window to see charts of your focused time for the week.
