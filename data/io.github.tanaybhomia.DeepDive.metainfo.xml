@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.tanaybhomia.DeepDive</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Deep Dive</name>
+  <summary>An uncompromising Pomodoro timer for GNOME</summary>
+
+  <description>
+    <p>Deep Dive is an active productivity timer built for the GNOME desktop. Based on the concept of "Submerging," it operates on the principle that deep work requires strict boundaries.</p>
+    <p>When you start a timer, you are going underwater where distractions cannot reach you. You either finish the dive, or you deliberately "Give Up" and surface early.</p>
+    <ul>
+      <li>Submerge Mode: Locks the timer, preventing pausing or skipping.</li>
+      <li>Web Blocker: Modifies your hosts file to instantly block distracting websites.</li>
+      <li>Break Overlays: Forces you to take a screen break with a full-screen overlay.</li>
+      <li>Do Not Disturb: Automatically silences system notifications during work blocks.</li>
+      <li>Project Tracking: Logs focused time against specific projects securely on your device.</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.tanaybhomia.DeepDive.desktop</launchable>
+  <url type="homepage">https://tanaybhomia.github.io/Deep-Dive/</url>
+  <url type="bugtracker">https://github.com/tanaybhomia/Deep-Dive/issues</url>
+  <developer_name>Tanay Bhomia</developer_name>
+  
+  <screenshots>
+    <screenshot type="default">
+      <!-- TODO: Replace with an actual screenshot URL after pushing to GitHub -->
+      <image>https://raw.githubusercontent.com/tanaybhomia/Deep-Dive/main/docs/assets/images/screenshot1.png</image>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="1.0.0" date="2026-08-27">
+      <description>
+        <p>Initial Release of Deep Dive!</p>
+        <ul>
+          <li>Includes Submerge Mode, Web Blocker, and Project Tracking.</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1"/>
+</component>

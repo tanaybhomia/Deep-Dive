@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Deep Dive
+Comment=A strict Pomodoro timer for GNOME that forces you to focus
+Exec=deepdive
+Icon=io.github.tanaybhomia.DeepDive
+Terminal=false
+Type=Application
+Categories=Utility;Productivity;GNOME;GTK;
+StartupNotify=true

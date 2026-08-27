@@ -287,7 +287,7 @@ class DeepDiveApplication(Adw.Application):
             application_name="Deep Dive",
             application_icon="io.github.tanaybhomia.DeepDive",
             developer_name="Tanay Bhomia",
-            version="1.4.0",
+            version="1.0.0",
             website="https://tanaybhomia.github.io/Deep-Dive/",
             issue_url="https://github.com/tanaybhomia/Deep-Dive/issues",
             support_url="https://github.com/tanaybhomia/Deep-Dive/discussions",
@@ -297,7 +297,8 @@ class DeepDiveApplication(Adw.Application):
         )
         
         about.set_release_notes("""<ul>
-  <li>General improvements and bug fixes.</li>
+  <li>Initial Release of Deep Dive!</li>
+  <li>Includes Submerge Mode, Web Blocker, and Project Tracking.</li>
 </ul>""")
 
         about.add_link("Wiki", "https://github.com/tanaybhomia/Deep-Dive/wiki")
