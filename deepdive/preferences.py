@@ -684,9 +684,10 @@ chmod 440 /etc/sudoers.d/99-deepdive-blocker
                             print(f"Installation failed: {result.returncode} - {err}")
                             GLib.idle_add(lambda: pref_win._show_msg("Installation Failed", f"Error ({result.returncode}): {err}"))
                     except Exception as e:
-                        print(f"Installation exception: {e}")
+                        error_msg = str(e)
+                        print(f"Installation exception: {error_msg}")
                         GLib.idle_add(lambda: pref_win._revert_switch(switch))
-                        GLib.idle_add(lambda: pref_win._show_msg("Exception", str(e)))
+                        GLib.idle_add(lambda: pref_win._show_msg("Exception", error_msg))
                         
                 threading.Thread(target=run_installation, args=(self,), daemon=True).start()
             else:

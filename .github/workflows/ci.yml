@@ -39,16 +39,16 @@ jobs:
           manifest-path: io.github.tanaybhomia.DeepDive.yml
           cache-key: flatpak-builder-${{ github.sha }}
 
-  meson-tests:
-    name: Run Unit & Validation Tests
+  validate-metadata:
+    name: Validate Metadata
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Dependencies
+      - name: Install Validation Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y meson ninja-build gettext desktop-file-utils appstream
-      - name: Setup Meson
-        run: meson setup builddir
-      - name: Run Tests
-        run: meson test -C builddir
+          sudo apt-get install -y desktop-file-utils appstream
+      - name: Validate Desktop File
+        run: desktop-file-validate data/io.github.tanaybhomia.DeepDive.desktop
+      - name: Validate AppStream XML
+        run: appstreamcli validate --no-net --explain data/io.github.tanaybhomia.DeepDive.metainfo.xml
