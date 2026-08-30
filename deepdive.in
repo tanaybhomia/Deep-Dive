@@ -1,0 +1,3 @@
+#!/bin/sh
+export PYTHONPATH="@pkgdatadir@:$PYTHONPATH"
+exec @PYTHON@ "@pkgdatadir@/main.py" "$@"
