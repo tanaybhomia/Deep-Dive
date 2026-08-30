@@ -280,7 +280,7 @@ class DeepDiveApplication(Adw.Application):
         prefs_win.present()
 
     def _on_donate_action(self, action, param):
-        Gio.AppInfo.launch_default_for_uri("https://tanaybhomia.github.io/Deep-Dive/donate.html", None)
+        Gio.AppInfo.launch_default_for_uri("https://tanaybhomia.github.io/DeepDive/donate.html", None)
 
     def _on_about_action(self, action, param):
         about = Adw.AboutWindow(
@@ -288,9 +288,9 @@ class DeepDiveApplication(Adw.Application):
             application_icon="io.github.tanaybhomia.DeepDive",
             developer_name="Tanay Bhomia",
             version="1.0.0",
-            website="https://tanaybhomia.github.io/Deep-Dive/",
-            issue_url="https://github.com/tanaybhomia/Deep-Dive/issues",
-            support_url="https://github.com/tanaybhomia/Deep-Dive/discussions",
+            website="https://tanaybhomia.github.io/DeepDive/",
+            issue_url="https://github.com/tanaybhomia/DeepDive/issues",
+            support_url="https://github.com/tanaybhomia/DeepDive/discussions",
             copyright="© 2026 Tanay Bhomia",
             license_type=Gtk.License.GPL_3_0,
             transient_for=self.props.active_window,
@@ -301,8 +301,8 @@ class DeepDiveApplication(Adw.Application):
   <li>Includes Submerge Mode, Web Blocker, and Project Tracking.</li>
 </ul>""")
 
-        about.add_link("Wiki", "https://github.com/tanaybhomia/Deep-Dive/wiki")
-        about.add_link("Donate", "https://tanaybhomia.github.io/Deep-Dive/donate.html")
+        about.add_link("Wiki", "https://github.com/tanaybhomia/DeepDive/wiki")
+        about.add_link("Donate", "https://tanaybhomia.github.io/DeepDive/donate.html")
 
         debug_info = (
             "os: Fedora Linux 44 (Workstation Edition)\n"

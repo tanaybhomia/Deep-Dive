@@ -19,12 +19,12 @@
   </description>
 
   <launchable type="desktop-id">io.github.tanaybhomia.DeepDive.desktop</launchable>
-  <url type="homepage">https://tanaybhomia.github.io/Deep-Dive/</url>
-  <url type="bugtracker">https://github.com/tanaybhomia/Deep-Dive/issues</url>
-  <url type="vcs-browser">https://github.com/tanaybhomia/Deep-Dive</url>
-  <url type="help">https://github.com/tanaybhomia/Deep-Dive/wiki</url>
+  <url type="homepage">https://tanaybhomia.github.io/DeepDive/</url>
+  <url type="bugtracker">https://github.com/tanaybhomia/DeepDive/issues</url>
+  <url type="vcs-browser">https://github.com/tanaybhomia/DeepDive</url>
+  <url type="help">https://github.com/tanaybhomia/DeepDive/wiki</url>
   <url type="contact">https://matrix.to/#/@tanaybhomia:matrix.org</url>
-  <url type="donation">https://tanaybhomia.github.io/Deep-Dive/donate.html</url>
+  <url type="donation">https://tanaybhomia.github.io/DeepDive/donate.html</url>
   
   <developer id="io.github.tanaybhomia">
     <name>Tanay Bhomia</name>
@@ -41,23 +41,23 @@
   
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/tanaybhomia/Deep-Dive/main/docs/assets/images/DarkMode/PomodoroDark.png</image>
+      <image>https://raw.githubusercontent.com/tanaybhomia/DeepDive/main/docs/assets/images/DarkMode/PomodoroDark.png</image>
       <caption>Pomodoro Timer</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/tanaybhomia/Deep-Dive/main/docs/assets/images/DarkMode/TimerDark.png</image>
+      <image>https://raw.githubusercontent.com/tanaybhomia/DeepDive/main/docs/assets/images/DarkMode/TimerDark.png</image>
       <caption>Stopwatch Timer</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/tanaybhomia/Deep-Dive/main/docs/assets/images/DarkMode/SubmergeDark.png</image>
+      <image>https://raw.githubusercontent.com/tanaybhomia/DeepDive/main/docs/assets/images/DarkMode/SubmergeDark.png</image>
       <caption>Submerge Mode</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/tanaybhomia/Deep-Dive/main/docs/assets/images/DarkMode/AdblockerDark.png</image>
+      <image>https://raw.githubusercontent.com/tanaybhomia/DeepDive/main/docs/assets/images/DarkMode/AdblockerDark.png</image>
       <caption>Web Blocker Preferences</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/tanaybhomia/Deep-Dive/main/docs/assets/images/DarkMode/MiniModeDark.png</image>
+      <image>https://raw.githubusercontent.com/tanaybhomia/DeepDive/main/docs/assets/images/DarkMode/MiniModeDark.png</image>
       <caption>Compact Mini Mode</caption>
     </screenshot>
   </screenshots>
